@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "lib": ["es6", "es2015", "dom"],
-    "declaration": true,
-    "outDir": "lib",
+    "experimentalDecorators": true,
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "outDir": "./dist",
     "rootDirs": ["./src", "./tests"],
-    "sourceMap": true,
-    "strict": true,
-    "types": ["node"],
-    "esModuleInterop": true,
-    "resolveJsonModule": true
-  }
+    "preserveConstEnums": true,
+    "sourceMap": true
+  },
+  "files": ["./src/tests4j.ts"],
+  "exclude": ["node_modules"]
 }

@@ -1,11 +1,17 @@
 {
-  "name": "@ts.adligo.org/tests4j",
+  "compilerOptions": {
+    "module": "nodenext"
+  },
+  "devDependencies": {
+    "@ts.adligo.org/tests4j": "^0.1.5",
+    "typescript": "^5.0.4"
+  },
   "lockfileVersion": 3,
-  "requires": true,
+  "main": "./src/tests4j.ts",
+  "name": "@ts.adligo.org/tests4j",
   "packages": {
     "": {
       "name": "@ts.adligo.org/tests4j",
-      "version": "1.0.6",
       "license": "Apache-2.0",
       "devDependencies": {
         "typescript": "^5.0.4"
@@ -21,8 +27,10 @@
       }
     }
   },
-  "args": [
-    "-i"
-  ],
-  "version": "0.0.1"
+  "scripts": {
+    "test": "echo TODO for now thats a pass :)- ",
+    "tsc": "tsc"
+  },
+  "types": "./src/tests4j.ts",
+  "version": "0.1.8"
 }
