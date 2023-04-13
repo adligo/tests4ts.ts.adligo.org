@@ -3,7 +3,7 @@
     "module": "nodenext"
   },
   "devDependencies": {
-    "@ts.adligo.org/io": "^0.0.5",
+    "@ts.adligo.org/io": "^0.0.6",
     "typescript": "^5.0.4"
   },
   "lockfileVersion": 3,
