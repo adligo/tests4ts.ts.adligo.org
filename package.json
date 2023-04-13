@@ -7,7 +7,7 @@
     "typescript": "^5.0.4"
   },
   "lockfileVersion": 3,
-  "main": "./src/tests4j.ts",
+  "main": "dist/tests4j",
   "name": "@ts.adligo.org/tests4j",
   "packages": {
     "": {
@@ -31,6 +31,6 @@
     "test": "echo TODO for now thats a pass :)- ",
     "tsc": "tsc"
   },
-  "types": "./src/tests4j.ts",
-  "version": "0.1.8"
+  "types": "src/tests4j.ts",
+  "version": "0.2.1"
 }
