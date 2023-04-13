@@ -32,6 +32,6 @@
     "tsc": "tsc"
   },
   "type": "module",
-  "types": "src/tests4j.ts",
+  "types": "src/tests4j.mts",
   "version": "0.2.4"
 }

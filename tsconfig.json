@@ -10,6 +10,6 @@
     "preserveConstEnums": true,
     "sourceMap": true
   },
-  "files": ["./src/tests4j.ts"],
+  "files": ["./src/tests4j.mts"],
   "exclude": ["node_modules"]
 }
