@@ -33,5 +33,5 @@
   },
   "type": "module",
   "types": "src/tests4j.ts",
-  "version": "0.2.3"
+  "version": "0.2.4"
 }
