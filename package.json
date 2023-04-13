@@ -3,7 +3,7 @@
     "module": "nodenext"
   },
   "devDependencies": {
-    "@ts.adligo.org/io": "^0.0.6",
+    "@ts.adligo.org/io": "^0.0.7",
     "typescript": "^5.0.4"
   },
   "lockfileVersion": 3,
@@ -33,5 +33,5 @@
   },
   "type": "module",
   "types": "src/tests4j.mts",
-  "version": "0.2.5"
+  "version": "0.2.6"
 }
