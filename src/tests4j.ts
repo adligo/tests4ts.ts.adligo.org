@@ -51,11 +51,6 @@ export class AssertionContext {
 
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
- */
-export type I_Out  = (message: string) => void;
-
-/**
- * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  * Note a test is really a indivual Function in this implementation,
  * hoistorically in the Java tests4j implementation it's a method.
  */
