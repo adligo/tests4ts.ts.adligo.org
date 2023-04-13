@@ -13,6 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
+import {I_Out} from '@ts.adligo.org/io';
 
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
