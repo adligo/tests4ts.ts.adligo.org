@@ -13,7 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-import {I_Out} from '@ts.adligo.org/io';
+import {I_Out} from './i_io.ts.adligo.org@slink/i_io.mjs';
 
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
@@ -25,6 +25,24 @@ export type I_AssertionContextConsumer = (ac : AssertionContext) => void;
  */
 export class AssertionContext {
   private count: number = 0;
+
+  public error(expected: string, runnable: () => void) {
+    this.count++;
+    var err: any;
+    try {
+      runnable();
+    } catch (e) {
+      err = e;
+    }
+    if (err == undefined) {
+      throw Error('The runnable was expected to throw an Error, however it did NOT throw an error.');
+    } else {
+      let ex: Error = err as Error; 
+      if (ex.message != expected) {
+        this.equals(expected, err.message);
+      }
+    }
+  }
 
   public equals(expected: string, actual: string) {
     this.count++;

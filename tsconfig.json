@@ -1,15 +1,24 @@
 {
+  "exclude": ["dist","lib","node_modules"],
   "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
     "experimentalDecorators": true,
-    "target": "ES2022",
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "noImplicitAny": true,
+    "moduleResolution": "nodenext",
+    "rootDirs": ["./src"],
     "outDir": "./dist",
-    "rootDirs": ["./src", "./tests"],
     "preserveConstEnums": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "target": "ES2022",
+    "traceResolution": true
   },
-  "files": ["./src/tests4j.mts"],
-  "exclude": ["node_modules"]
+  "include": ["./src"],
+  "ts-node": {
+    "esm": true,
+    "compilerOptions": {
+      "module": "NodeNext"
+    }
+  }
 }

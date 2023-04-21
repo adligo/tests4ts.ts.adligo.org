@@ -2,8 +2,15 @@
   "compilerOptions": {
     "module": "nodenext"
   },
+  "dependencySrcSLinks": [{
+    "project": "i_io.ts.adligo.org"
+  }],
+  "dependencies": {
+    "@ts.adligo.org/i_io": "^0.0.1",
+    "typescript": "^5.0.4"
+  },
   "devDependencies": {
-    "@ts.adligo.org/io": "^0.0.7",
+    "gulp": "^4.0.2",
     "typescript": "^5.0.4"
   },
   "lockfileVersion": 3,
