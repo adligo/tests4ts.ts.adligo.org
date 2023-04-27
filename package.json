@@ -4,6 +4,8 @@
   },
   "dependencySrcSLinks": [{
     "project": "i_io.ts.adligo.org"
+  },{
+    "project": "i_obj.ts.adligo.org"
   }],
   "dependencies": {
     "@ts.adligo.org/i_io": "^0.0.1",

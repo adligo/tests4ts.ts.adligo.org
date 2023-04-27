@@ -14,7 +14,12 @@
   * limitations under the License.
   */
 import {I_Out} from './i_io.ts.adligo.org@slink/i_io.mjs';
+import { I_Equatable } from './i_io.ts.adligo.org@slink/i_paths.ts.adligo.org@slink/i_obj.ts.adligo.org@slink/i_obj.mjs';
+import { I_String } from './i_io.ts.adligo.org@slink/i_strings.ts.adligo.org@slink/i_strings.mjs';
 
+function out(message: string ) {
+  console.count(message);
+}
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */ 
@@ -39,32 +44,69 @@ export class AssertionContext {
     } else {
       let ex: Error = err as Error; 
       if (ex.message != expected) {
-        this.equals(expected, err.message);
+        this.same(expected, err.message);
       }
     }
   }
 
-  public equals(expected: string, actual: string) {
-    this.count++;
-    if (expected != actual) {
-      throw Error('The expected string is; \n\t\'' + expected + '\'\n\tHowever the actual string is;\n\t\'' + 
-        actual + '\'');
-    }
+  public equals(expected: I_Equatable, actual: any, message?: string) {
+    let test = !expected.equals(actual);
+    this.eqNeqIn(test, expected, actual, message);
   }
 
   public getCount(): number { return this.count; } 
-  public isFalse(check: boolean, message: string) {
+  public isFalse(check: boolean, message?: string) {
     this.count++;
     if (check) {
       throw Error(message);
     }
   }
 
-  public isTrue(check: boolean, message: string) {
+  public isTrue(check: boolean, message?: string) {
     this.count++;
     if (!check) {
       throw Error(message);
     }
+  }
+
+  public notEquals(expected: I_Equatable, actual: any, message?: string) {
+    let test = expected.equals(actual);
+    this.eqNeqIn(test, expected, actual, message);
+  }
+
+  public same(expected: string, actual: string, message?: string) {
+    this.count++;
+    if (expected != actual) {
+      this.throwStringMatchError(expected, actual, message);
+    }
+  }
+
+  private eqNeqIn(test: boolean, expected: I_Equatable, actual: any, message?: string) {
+    this.count++;
+    //out('in eqNeqIn with test = ' +test)
+    if (test) {
+      let expectedAsString: I_String = expected as I_String;
+      let actualAsString: I_String = expected as I_String;
+      if (expectedAsString.toString != undefined && actualAsString.toString != undefined) {
+        this.throwStringMatchError(expectedAsString.toString(), actualAsString.toString(), message);   
+      } else if (expectedAsString.toString != undefined) {
+        this.throwStringMatchError(expectedAsString.toString(), 'actual didn\'t implement I_String ... ' + actual, message);
+      } else if (actualAsString.toString != undefined) {
+        this.throwStringMatchError('expected didn\'t implement I_String ... ' + expected, actualAsString.toString(), message);
+      } else {
+        this.throwStringMatchError('expected didn\'t implement I_String ... ' + expected, 
+          'actual didn\'t implement I_String ... ' + actual, message);
+      }
+    }
+  }
+  private throwStringMatchError(expected: string, actual: string, message?: string) {
+    var s = '';
+    if (message != undefined) {
+      s = s + message;
+    }
+
+    throw Error(s + '\nThe expected string is; \n\t\'' + expected + '\'\n\tHowever the actual string is;\n\t\'' + 
+      actual + '\'');
   }
 }
 
