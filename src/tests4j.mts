@@ -14,8 +14,8 @@
   * limitations under the License.
   */
 import {I_Out} from './i_io.ts.adligo.org@slink/i_io.mjs';
-import { I_Equatable } from './i_io.ts.adligo.org@slink/i_paths.ts.adligo.org@slink/i_obj.ts.adligo.org@slink/i_obj.mjs';
-import { I_String } from './i_io.ts.adligo.org@slink/i_strings.ts.adligo.org@slink/i_strings.mjs';
+import { I_Equatable } from './i_obj.ts.adligo.org@slink/i_obj.mjs';
+import { I_String, I_Named } from './i_strings.ts.adligo.org@slink/i_strings.mjs';
 
 function out(message: string ) {
   console.count(message);
@@ -25,6 +25,7 @@ function out(message: string ) {
  */ 
 export type I_AssertionContextConsumer = (ac : AssertionContext) => void;
 
+export type I_Runnable = () => void;
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */
@@ -115,7 +116,7 @@ export class AssertionContext {
  * Note a test is really a indivual Function in this implementation,
  * hoistorically in the Java tests4j implementation it's a method.
  */
-export class Test {
+export class Test implements I_Named {
   private acConsumer: I_AssertionContextConsumer;
   private name: string;
 
@@ -162,7 +163,7 @@ export class TestResult {
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */
-export class ApiTrial {
+export class ApiTrial implements I_Named {
   private name: string;
   private tests: Test[];
   private results: TestResult[] = [];
@@ -177,22 +178,33 @@ export class ApiTrial {
   public getName() { return this.name; }
   public getTestCount() { return this.tests.length; }
   public getTestResults() { return this.results; }
-  public run() {
-    this.tests.forEach(t => {
-      var e: string = '';
-      let ac: AssertionContext = new AssertionContext();
-      try {
-        t.run(ac)
-      } catch (x: any) {
-        e = '' + x;
+  public run(): I_Runnable {
+    //out('In run of ' + this.getName());
+    let funs: Function[] = new Array(this.tests.length);
+    for (var i = 0; i< this.tests.length; i++) {
+      let t: Test = this.tests[i];
+      //out('Aggergating async function for  ' + t.getName());
+      funs[i] = async () => {
+        var e: string = '';
+        let ac: AssertionContext = new AssertionContext();
+        try {
+          //out('Running  ' + t.getName());
+          t.run(ac)
+        } catch (x: any) {
+          e = '' + x;
+        }
+        if (e == '') {
+          //out('Assertion count is  ' + ac.getCount() + ' for test ' + t.getName());
+          this.results.push(new TestResult(ac.getCount(), t))
+        } else {
+          this.results.push(new TestResult(ac.getCount(), t, false, e));
+          this.failures++;
+        }
+        return;
       }
-      if (e == '') {
-        this.results.push(new TestResult(ac.getCount(), t))
-      } else {
-        this.results.push(new TestResult(ac.getCount(), t, false, e));
-        this.failures++;
-      }
-    });
+      funs[i]();
+    }
+    return async () => { return await Promise.all(funs)};
   }
 }
 
@@ -215,12 +227,23 @@ export class TrialSuite {
     this.trials = trials;
   }
 
-  public run() {
-    this.out('TrialSuite: ' + this.name);
+  public run(): TrialSuite {
+    this.out('TrialSuite: run ' + this.name);
+    let funAll = async () => {
+      let funs : Function[] = new Array(this.trials.length);
+      for (var i =0; i < this.trials.length; i++) {
+        let t: ApiTrial = this.trials[i]; 
+        funs[i] = t.run();
+      }
+      return await Promise.all(funs);
+    }
+    funAll();
+    return this;
+  }
+
+  printTextReport() {
     this.trials.forEach(t => {
-     
-      t.run();
-      this.out('\t' + t.getName() + this.name);
+      this.out('\t' + t.getName() + ' ' + this.name);
       this.out('\t\tAssertions: ' + t.getAssertionCount());
       this.out('\t\tFailures: ' + t.getFailureCount());
       this.out('\t\tTests: ' + t.getTestCount());

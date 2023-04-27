@@ -2,11 +2,11 @@
   "compilerOptions": {
     "module": "nodenext"
   },
-  "dependencySrcSLinks": [{
-    "project": "i_io.ts.adligo.org"
-  },{
-    "project": "i_obj.ts.adligo.org"
-  }],
+  "dependencySrcSLinks": [
+    { "project": "i_io.ts.adligo.org" },
+    { "project": "i_obj.ts.adligo.org"},
+    { "project": "i_strings.ts.adligo.org"}
+  ],
   "dependencies": {
     "@ts.adligo.org/i_io": "^0.0.1",
     "typescript": "^5.0.4"
