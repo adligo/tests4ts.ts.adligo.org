@@ -3,16 +3,24 @@
     "module": "nodenext"
   },
   "dependencySrcSLinks": [
-    { "project": "i_io.ts.adligo.org" },
-    { "project": "i_obj.ts.adligo.org"},
-    { "project": "i_strings.ts.adligo.org"}
+    {
+      "project": "i_io.ts.adligo.org"
+    },
+    {
+      "project": "i_obj.ts.adligo.org"
+    },
+    {
+      "project": "i_strings.ts.adligo.org"
+    }
   ],
   "dependencies": {
-    "@ts.adligo.org/i_io": "^0.0.1",
     "typescript": "^5.0.4"
   },
   "devDependencies": {
+    "@types/node": "^22.15.21",
+    "fs": "^0.0.1-security",
     "gulp": "^4.0.2",
+    "path": "^0.12.7",
     "typescript": "^5.0.4"
   },
   "lockfileVersion": 3,

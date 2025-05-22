@@ -13,6 +13,10 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
+//const fs = require('fs');
+//const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
 import {I_Out} from './i_io.ts.adligo.org@slink/i_io.mjs';
 import { I_Equatable,  I_Classifiable } from './i_obj.ts.adligo.org@slink/i_obj.mjs';
 import { I_String, I_Named } from './i_strings.ts.adligo.org@slink/i_strings.mjs';
@@ -25,6 +29,12 @@ function out(message: string ) {
  */ 
 export type I_AssertionContextConsumer = (ac : AssertionContext) => void;
 
+/**
+ * Converts a Trial's Results into a xml string that can be printed as a file
+ */
+export interface I_XmlConverter {
+   convertToXml(trial: ApiTrial): string;
+}
 export type I_Runnable = () => void;
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
@@ -244,7 +254,7 @@ export class TrialSuite {
     return this;
   }
 
-  printTextReport() {
+  printTextReport(): TrialSuite  {
     this.trials.forEach(t => {
       this.out('\t' + t.getName() + ' ' + this.name);
       this.out('\t\tAssertions: ' + t.getAssertionCount());
@@ -258,6 +268,32 @@ export class TrialSuite {
         });
       }
     });
+    return this;
   }
 
+  createDir(dirPath) {
+    const absolutePath = path.resolve(dirPath); // Resolve to an absolute path
+    if (!fs.existsSync(absolutePath)) {
+      fs.mkdirSync(absolutePath, { recursive: true }); // Create directory, including parent directories if they don't exist
+    }
+  }
+
+  createFile(filePath, content) {
+    const absolutePath = path.resolve(filePath);
+    const dirPath = path.dirname(absolutePath);
+    this.createDir(dirPath); // Ensure directory exists before creating file
+    fs.writeFileSync(absolutePath, content);
+  }
+
+  printTestReportFiles(converter: I_XmlConverter): TrialSuite  {
+    this.createDir('build');
+    this.createDir('build/test-reports');
+    this.trials.forEach(t => {
+      var fname : string = 'build/test-reports/' + t.getName() + '.xml';
+      console.log("creating file " + fname);
+      var xmlString: string = converter.convertToXml(t);
+      this.createFile(fname, xmlString);
+    });
+    return this;
+  }
 }
