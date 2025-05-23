@@ -2,17 +2,6 @@
   "compilerOptions": {
     "module": "nodenext"
   },
-  "dependencySrcSLinks": [
-    {
-      "project": "i_io.ts.adligo.org"
-    },
-    {
-      "project": "i_obj.ts.adligo.org"
-    },
-    {
-      "project": "i_strings.ts.adligo.org"
-    }
-  ],
   "dependencies": {
     "typescript": "^5.0.4"
   },
@@ -48,6 +37,8 @@
     "test": "echo TODO for now thats a pass :)- ",
     "tsc": "tsc"
   },
+  "sharedNodeModuleProjectSLinkEnvVar": ["TESTS4TS_NODE_MODULE_SLINK"],
+  "sharedNodeModuleProjectSLinks": ["slink_group_deps.ts.adligo.org", "fab_group_deps.ts.adligo.org"],
   "type": "module",
   "types": "src/tests4j.mts",
   "version": "0.2.6"

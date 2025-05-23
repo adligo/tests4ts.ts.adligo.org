@@ -17,9 +17,13 @@
 //const path = require('path');
 import * as fs from 'fs';
 import * as path from 'path';
-import {I_Out} from './i_io.ts.adligo.org@slink/i_io.mjs';
-import { I_Equatable,  I_Classifiable } from './i_obj.ts.adligo.org@slink/i_obj.mjs';
-import { I_String, I_Named } from './i_strings.ts.adligo.org@slink/i_strings.mjs';
+// The following commented out xml tags with slinks will flag to the slink command line program, that these paths can be modfied 
+// from the slink logic instead of hard coding them like I have currently done.
+//<slinks>
+import {I_Out} from '../../i_io.ts.adligo.org/src/i_io.mjs';
+import { I_Equatable,  I_Classifiable } from '../../i_obj.ts.adligo.org/src/i_obj.mjs';
+import { I_String, I_Named } from '../../i_strings.ts.adligo.org/src/i_strings.mjs';
+//</slinks>
 
 function out(message: string ) {
   console.count(message);
