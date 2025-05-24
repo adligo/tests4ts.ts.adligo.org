@@ -66,7 +66,18 @@ export class AssertionContext implements I_Classifiable {
   }
 
   public equals(expected: any, actual: any, message?: string) {
-    let test = !expected.equals(actual);
+    var test = false;
+    if (expected != undefined) {
+       if (typeof(expected) == 'object') {
+         if (expected.equals != undefined) {
+           test = !expected.equals(actual);
+         } else {
+           test = expected != actual;
+         }
+       } else {
+         test = expected != actual;
+       }
+    }
     this.eqNeqIn(test, expected, actual, message);
   }
 
@@ -94,35 +105,43 @@ export class AssertionContext implements I_Classifiable {
   public same(expected: string, actual: string, message?: string) {
     this.count++;
     if (expected != actual) {
-      this.throwStringMatchError(expected, actual, message);
+      this.StringMatchError(expected, actual, message);
     }
   }
 
-  private eqNeqIn(test: boolean, expected: I_Equatable, actual: any, message?: string) {
+  /**
+   *
+   * @param testFailed true when the test failed
+   * @param expected
+   * @param actual
+   * @param message
+   * @private
+   */
+  private eqNeqIn(testFailed: boolean, expected: I_Equatable, actual: any, message?: string) {
     this.count++;
     //out('in eqNeqIn with test = ' +test)
-    if (test) {
+    if (testFailed) {
       let expectedAsString: I_String = expected as I_String;
-      let actualAsString: I_String = expected as I_String;
+      let actualAsString: I_String = actual as I_String;
       if (expectedAsString.toString != undefined && actualAsString.toString != undefined) {
-        this.throwStringMatchError(expectedAsString.toString(), actualAsString.toString(), message);   
+        this.StringMatchError(expectedAsString.toString(), actualAsString.toString(), message);
       } else if (expectedAsString.toString != undefined) {
-        this.throwStringMatchError(expectedAsString.toString(), 'actual didn\'t implement I_String ... ' + actual, message);
+        this.StringMatchError(expectedAsString.toString(), 'actual didn\'t implement I_String ... ' + actual, message);
       } else if (actualAsString.toString != undefined) {
-        this.throwStringMatchError('expected didn\'t implement I_String ... ' + expected, actualAsString.toString(), message);
+        this.StringMatchError('expected didn\'t implement I_String ... ' + expected, actualAsString.toString(), message);
       } else {
-        this.throwStringMatchError('expected didn\'t implement I_String ... ' + expected, 
+        this.StringMatchError('expected didn\'t implement I_String ... ' + expected,
           'actual didn\'t implement I_String ... ' + actual, message);
       }
     }
   }
-  private throwStringMatchError(expected: string, actual: string, message?: string) {
+  private StringMatchError(expected: string, actual: string, message?: string) {
     var s = '';
     if (message != undefined) {
       s = s + message;
     }
 
-    throw Error(s + '\nThe expected string is; \n\t\'' + expected + '\'\n\tHowever the actual string is;\n\t\'' + 
+    throw Error(s + '\nThe expected is; \n\t\'' + expected + '\'\n\tHowever the actual is;\n\t\'' +
       actual + '\'');
   }
 }
@@ -259,8 +278,14 @@ export class TrialSuite {
   }
 
   printTextReport(): TrialSuite  {
+    var ta = 0;
+    var tf = 0;
+    var tt = 0;
     this.trials.forEach(t => {
       this.out('\t' + t.getName() + ' ' + this.name);
+      ta += t.getAssertionCount();
+      tf += t.getFailureCount();
+      tt += t.getTestCount();
       this.out('\t\tAssertions: ' + t.getAssertionCount());
       this.out('\t\tFailures: ' + t.getFailureCount());
       this.out('\t\tTests: ' + t.getTestCount());
@@ -272,6 +297,10 @@ export class TrialSuite {
         });
       }
     });
+    this.out('\n\nTotal for ' + this.trials.length + " Trials ");
+    this.out('\tAssertions: ' + ta);
+    this.out('\tFailures: ' + tf);
+    this.out('\tTests: ' + tt);
     return this;
   }
 
