@@ -229,7 +229,7 @@ export class ApiTrial implements I_Named {
           t.run(ac)
         } catch (x: any) {
           caught = x;
-          e = 'Test ' + t.getName() + ' Failed\n' + x + '\n';
+          e = '\n\nTest ' + t.getName() + ' Failed\n' + x + '\n';
           if (caught != undefined) {
             e += caught.stack;
           }
