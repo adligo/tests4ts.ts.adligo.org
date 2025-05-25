@@ -218,16 +218,21 @@ export class ApiTrial implements I_Named {
     let funs: Function[] = new Array(this.tests.length);
     for (var i = 0; i< this.tests.length; i++) {
       let t: Test = this.tests[i];
+      var caught: any;
       //out('Aggergating async function for  ' + t.getName());
       funs[i] = async () => {
         var e: string = '';
         let ac: AssertionContext = new AssertionContext();
         try {
           //out('Running  ' + t.getName());
-          console.log('Running Test t ' + JSON.stringify(t) + ' with ac ' + JSON.stringify(ac));
+          console.log('Running Test ' + JSON.stringify(t) + ' with ac ' + JSON.stringify(ac));
           t.run(ac)
         } catch (x: any) {
-          e = '' + x;
+          caught = x;
+          e = 'Test ' + t.getName() + ' Failed\n' + x + '\n';
+          if (caught != undefined) {
+            e += caught.stack;
+          }
         }
         if (e == '') {
           //out('Assertion count is  ' + ac.getCount() + ' for test ' + t.getName());
