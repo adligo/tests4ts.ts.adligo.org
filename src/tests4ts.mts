@@ -146,6 +146,23 @@ export class AssertionContext implements I_Classifiable {
   }
 }
 
+export class TestParams {
+  public static of(name: string) {
+    let tp = new TestParams();
+    tp._name = name;
+    return tp;
+  }
+
+  
+  private _name: string;
+  private _ignore: boolean = false;
+  
+  public ignore(): TestParams {
+    this._ignore = true;
+    return this;
+  }
+}
+
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  * Note a test is really a indivual Function in this implementation,
@@ -154,13 +171,16 @@ export class AssertionContext implements I_Classifiable {
 export class Test implements I_Named {
   private acConsumer: I_AssertionContextConsumer;
   private name: string;
+  private ignored: boolean;
 
-  constructor(name: string, assertionContextConsumer: I_AssertionContextConsumer) {
-    this.name = name;
+  constructor(params: TestParams, assertionContextConsumer: I_AssertionContextConsumer) {
+    this.name = params._name;
+    this.ignored = params._ignore;
     this.acConsumer = assertionContextConsumer;
   }
 
   public getName() { return this.name; }
+  public isIgnored() { return this.ignored; }
   public run(assertionCtx: AssertionContext) { this.acConsumer(assertionCtx); }
 }
 
