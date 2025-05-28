@@ -227,6 +227,11 @@ export class ApiTrial implements I_Named {
   constructor(name: string, tests: Test[]) {
     this.name = name;
     this.tests = tests;
+    for (var i = 0; i< this.tests.length; i++) {
+      if (tests[i].getName() == undefined || tests[i].getName().trim() == '') {
+        throw Error("A test with an empty or undefined name has been passed ???");
+      }
+    }
   }
   public getAssertionCount() { return this.results.map(r => r.getAssertionCount()).reduce((sum, current) => sum + current, 0); }
   public getFailureCount() { return this.failures; }
@@ -244,9 +249,14 @@ export class ApiTrial implements I_Named {
         var e: string = '';
         let ac: AssertionContext = new AssertionContext();
         try {
-          //out('Running  ' + t.getName());
-          console.log('Running Test ' + JSON.stringify(t) + ' with ac ' + JSON.stringify(ac));
-          t.run(ac)
+          if (t.isIgnored()) {
+            console.log('IGNORING Test ' + t.getName());
+          } else {
+            //out('Running  ' + t.getName());
+            //+ ' with ac ' + JSON.stringify(ac)
+            console.log('Running Test ' + t.getName());
+            t.run(ac)
+          }
         } catch (x: any) {
           caught = x;
           e = '\n\nTest ' + t.getName() + ' Failed\n' + x + '\n';
