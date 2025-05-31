@@ -1,4 +1,7 @@
 /**
+ *
+ *
+ *
   * Copyright 2023 Adligo Inc / Scott Morgan
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
@@ -180,6 +183,7 @@ export class Test implements I_Named {
   }
 
   public getName() { return this.name; }
+  public ignore() : Test { this.ignored = true; return this; }
   public isIgnored() { return this.ignored; }
   public run(assertionCtx: AssertionContext) { this.acConsumer(assertionCtx); }
 }
@@ -220,6 +224,7 @@ export class TestResult {
  */
 export class ApiTrial implements I_Named {
   private name: string;
+  private ignored: number = 0;
   private tests: Test[];
   private results: TestResult[] = [];
   private failures: number = 0;
@@ -235,6 +240,7 @@ export class ApiTrial implements I_Named {
   }
   public getAssertionCount() { return this.results.map(r => r.getAssertionCount()).reduce((sum, current) => sum + current, 0); }
   public getFailureCount() { return this.failures; }
+  public getIgnored() { return this.ignored; }
   public getName() { return this.name; }
   public getTestCount() { return this.tests.length; }
   public getTestResults() { return this.results; }
@@ -251,6 +257,7 @@ export class ApiTrial implements I_Named {
         try {
           if (t.isIgnored()) {
             console.log('IGNORING Test ' + t.getName());
+            this.ignored++;
           } else {
             //out('Running  ' + t.getName());
             //+ ' with ac ' + JSON.stringify(ac)
@@ -316,11 +323,13 @@ export class TrialSuite {
     var ta = 0;
     var tf = 0;
     var tt = 0;
+    var ti = 0;
     this.trials.forEach(t => {
       this.out('\t' + t.getName() + ' ' + this.name);
       ta += t.getAssertionCount();
       tf += t.getFailureCount();
       tt += t.getTestCount();
+      ti += t.getIgnored();
       this.out('\t\tAssertions: ' + t.getAssertionCount());
       this.out('\t\tFailures: ' + t.getFailureCount());
       this.out('\t\tTests: ' + t.getTestCount());
@@ -335,6 +344,7 @@ export class TrialSuite {
     this.out('\n\nTotal for ' + this.trials.length + " Trials ");
     this.out('\tAssertions: ' + ta);
     this.out('\tFailures: ' + tf);
+    this.out('\tIgnored: ' + ti);
     this.out('\tTests: ' + tt);
     return this;
   }
