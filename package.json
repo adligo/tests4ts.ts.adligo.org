@@ -3,7 +3,7 @@
     "module": "nodenext"
   },
   "dependencies": {
-    "typescript": "^5.0.4"
+    "npm": "^11.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.21",
@@ -34,7 +34,7 @@
     }
   },
   "scripts": {
-    "test": "echo TODO for now thats a pass :)- ",
+    "test": "echo @see https://github.com/adligo/tests4ts_tests.ts.adligo.org ",
     "build": "tsc"
   },
   "sharedNodeModuleProjectSLinkEnvVar": ["TESTS4TS_NODE_MODULE_SLINK"],

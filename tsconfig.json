@@ -1,24 +1,23 @@
 {
-  "exclude": ["dist","lib","node_modules"],
   "compilerOptions": {
-    "declaration": true,
-    "declarationMap": true,
+    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
-    "rootDirs": ["./src"],
-    "outDir": "./dist",
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "target": "ES2022",
-    "traceResolution": true
+    "lib": [
+      "es6"
+    ],
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "resolveJsonModule": true,
+    "sourceMap": true
   },
-  "include": ["./src"],
-  "ts-node": {
-    "esm": true,
-    "compilerOptions": {
-      "module": "NodeNext"
-    }
-  }
+  "include": [
+    "src/**/*.mts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
 }
