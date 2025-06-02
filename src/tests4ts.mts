@@ -164,6 +164,13 @@ export class TestParams {
     this._ignore = true;
     return this;
   }
+  
+  public getName() {
+    return this._name;
+  }
+  public isIgnored() {
+    return this._ignore;
+  }
 }
 
 /**
@@ -177,8 +184,8 @@ export class Test implements I_Named {
   private ignored: boolean;
 
   constructor(params: TestParams, assertionContextConsumer: I_AssertionContextConsumer) {
-    this.name = params._name;
-    this.ignored = params._ignore;
+    this.name = params.getName();
+    this.ignored = params.isIgnored();
     this.acConsumer = assertionContextConsumer;
   }
 
