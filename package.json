@@ -1,6 +1,11 @@
 {
-  "compilerOptions": {
-    "module": "nodenext"
+  "bin": {
+    "singleTestRunner": "./dist/tests4ts.ts.adligo.org/src/singleTestRunner.mjs",
+    "singleTrialRunner": "./dist/tests4ts.ts.adligo.org/src/singleTrialRunner.mjs",
+    "tests4ts": "./dist/tests4ts.ts.adligo.org/src/tests4ts.mjs"
+  },
+  "bugs": {
+    "url": "https://github.com/adligo/tests4ts.ts.adligo.org/issues"
   },
   "dependencies": {
     "npm": "^11.4.0"
@@ -9,27 +14,10 @@
     "@types/node": "^22.15.21",
     "typescript": "^5.0.4"
   },
+  "license": "Apache-2.0",
   "lockfileVersion": 3,
-  "main": "dist/tests4j",
-  "name": "@ts.adligo.org/tests4j",
-  "packages": {
-    "": {
-      "name": "@ts.adligo.org/tests4j",
-      "license": "Apache-2.0",
-      "devDependencies": {
-        "typescript": "^5.0.4"
-      }
-    },
-    "node_modules/typescript": {
-      "version": "5.0.4",
-      "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.0.4.tgz",
-      "integrity": "sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==",
-      "dev": true,
-      "engines": {
-        "node": ">=12.20"
-      }
-    }
-  },
+  "main": "dist/tests4ts",
+  "name": "@ts.adligo.org/tests4ts",
   "scripts": {
     "test": "echo @see https://github.com/adligo/tests4ts_tests.ts.adligo.org ",
     "build": "tsc"
@@ -37,6 +25,6 @@
   "sharedNodeModuleProjectSLinkEnvVar": ["TESTS4TS_NODE_MODULE_SLINK"],
   "sharedNodeModuleProjectSLinks": ["slink_group_deps.ts.adligo.org", "fab_group_deps.ts.adligo.org"],
   "type": "module",
-  "types": "src/tests4j.mts",
-  "version": "0.2.6"
+  "types": "src/tests4ts.mts",
+  "version": "0.3.2"
 }
