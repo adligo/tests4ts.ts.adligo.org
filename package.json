@@ -20,7 +20,8 @@
   "name": "@ts.adligo.org/tests4ts",
   "scripts": {
     "test": "echo @see https://github.com/adligo/tests4ts_tests.ts.adligo.org ",
-    "build": "tsc"
+    "build": "npm run tsc && slink -p",
+    "tsc": "tsc"
   },
   "sharedNodeModuleProjectSLinkEnvVar": ["TESTS4TS_NODE_MODULE_SLINK"],
   "sharedNodeModuleProjectSLinks": ["slink_group_deps.ts.adligo.org", "fab_group_deps.ts.adligo.org"],
