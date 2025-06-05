@@ -47,11 +47,11 @@ export type I_Runnable = () => void;
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */
 export class AssertionContext implements I_Classifiable {
-  private clazzName = 'org.adligo.ts.tests4ts.AssertionContext';
-  private count: number = 0;
+  private _clazzName = 'org.adligo.ts.tests4ts.AssertionContext';
+  private _count: number = 0;
 
   public error(expected: string, runnable: () => void) {
-    this.count++;
+    this._count++;
     var err: any;
     try {
       runnable();
@@ -84,17 +84,17 @@ export class AssertionContext implements I_Classifiable {
     this.eqNeqIn(test, expected, actual, message);
   }
 
-  public getCount(): number { return this.count; } 
-  public getClass(): string { return this.clazzName; } 
+  public getCount(): number { return this._count; }
+  public getClass(): string { return this._clazzName; }
   public isFalse(check: boolean, message?: string) {
-    this.count++;
+    this._count++;
     if (check) {
       throw Error(message);
     }
   }
 
   public isTrue(check: boolean, message?: string) {
-    this.count++;
+    this._count++;
     if (!check) {
       throw Error(message);
     }
@@ -106,7 +106,7 @@ export class AssertionContext implements I_Classifiable {
   }
 
   public same(expected: string, actual: string, message?: string) {
-    this.count++;
+    this._count++;
     if (expected != actual) {
       this.StringMatchError(expected, actual, message);
     }
@@ -121,7 +121,7 @@ export class AssertionContext implements I_Classifiable {
    * @private
    */
   private eqNeqIn(testFailed: boolean, expected: I_Equatable, actual: any, message?: string) {
-    this.count++;
+    this._count++;
     //out('in eqNeqIn with test = ' +test)
     if (testFailed) {
       let expectedAsString: I_String = expected as I_String;
@@ -179,83 +179,97 @@ export class TestParams {
  * hoistorically in the Java tests4j implementation it's a method.
  */
 export class Test implements I_Named {
-  private acConsumer: I_AssertionContextConsumer;
-  private name: string;
-  private ignored: boolean;
+  private _acConsumer: I_AssertionContextConsumer;
+  private _name: string;
+  private _ignored: boolean;
 
   constructor(params: TestParams, assertionContextConsumer: I_AssertionContextConsumer) {
-    this.name = params.getName();
-    this.ignored = params.isIgnored();
-    this.acConsumer = assertionContextConsumer;
+    this._name = params.getName();
+    this._ignored = params.isIgnored();
+    this._acConsumer = assertionContextConsumer;
   }
 
-  public getName() { return this.name; }
-  public ignore() : Test { this.ignored = true; return this; }
-  public isIgnored() { return this.ignored; }
-  public run(assertionCtx: AssertionContext) { this.acConsumer(assertionCtx); }
+  public getName() { return this._name; }
+  public ignore() : Test { this._ignored = true; return this; }
+  public isIgnored() { return this._ignored; }
+  public run(assertionCtx: AssertionContext) { this._acConsumer(assertionCtx); }
 }
 
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */
 export class TestResult {
-  private assertionCount : number;
-  private test: Test;
-  private pass: boolean;
-  private errorMessage: string;
+  private _assertionCount : number;
+  private _test: Test;
+  private _pass: boolean;
+  private _errorMessage: string;
 
   constructor(assertionCount: number, test: Test, pass?: boolean, errorMessage?: string) {
-    this.assertionCount = assertionCount;
-    this.test = test;
+    this._assertionCount = assertionCount;
+    this._test = test;
     if (pass == undefined) {
-      this.pass = true
+      this._pass = true
     } else {
-      this.pass = pass;
+      this._pass = pass;
     }
     if (errorMessage == undefined) {
-      this.errorMessage = '';
+      this._errorMessage = '';
     } else {
-      this.errorMessage = errorMessage;
+      this._errorMessage = errorMessage;
     }
   }
 
 
-  public isPass() { return this.pass}
-  public getAssertionCount() { return this.assertionCount }
-  public getErrorMessage() { return this.errorMessage; }
-  public getName() { return this.test.getName(); }
+  public isPass() { return this._pass}
+  public getAssertionCount() { return this._assertionCount }
+  public getErrorMessage() { return this._errorMessage; }
+  public getName() { return this._test.getName(); }
 }
 
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */
 export class ApiTrial implements I_Named {
-  private name: string;
-  private ignored: number = 0;
-  private tests: Test[];
-  private results: TestResult[] = [];
-  private failures: number = 0;
+  public static readonly A_TEST_WITH_AN_EMPTY_NAME_HAS_BEEN_SENT = "A test with an empty or undefined name has been sent ???";
+  public static readonly A_TEST_WITH_THE_FOLLOWING_DUPLICATE_NAME_HAS_BEEN_SENT = "A test with the following duplicate name has been sent ??? ";
+
+  private _name: string;
+  private _ignored: number = 0;
+  private _tests: Test[];
+  private _testsMap: Map<string,Test>;
+  private _results: TestResult[] = [];
+  private _failures: number = 0;
+
+
 
   constructor(name: string, tests: Test[]) {
-    this.name = name;
-    this.tests = tests;
-    for (var i = 0; i< this.tests.length; i++) {
-      if (tests[i].getName() == undefined || tests[i].getName().trim() == '') {
-        throw Error("A test with an empty or undefined name has been passed ???");
+    this._name = name;
+    this._tests = tests;
+    this._testsMap = new Map();
+    for (var i = 0; i< this._tests.length; i++) {
+      let test = tests[i];
+      if (test.getName() == undefined || test.getName().trim() == '') {
+        throw Error(ApiTrial.A_TEST_WITH_AN_EMPTY_NAME_HAS_BEEN_SENT);
       }
+      if (this._testsMap.has(test.getName())) {
+        throw Error(ApiTrial.A_TEST_WITH_THE_FOLLOWING_DUPLICATE_NAME_HAS_BEEN_SENT + test.getName());
+      }
+      this._testsMap.set(test.getName(), test);
     }
+
   }
-  public getAssertionCount() { return this.results.map(r => r.getAssertionCount()).reduce((sum, current) => sum + current, 0); }
-  public getFailureCount() { return this.failures; }
-  public getIgnored() { return this.ignored; }
-  public getName() { return this.name; }
-  public getTestCount() { return this.tests.length; }
-  public getTestResults() { return this.results; }
+  public getAssertionCount() { return this._results.map(r => r.getAssertionCount()).reduce((sum, current) => sum + current, 0); }
+  public getFailureCount() { return this._failures; }
+  public getIgnored() { return this._ignored; }
+  public getName() { return this._name; }
+  public getTestCount() { return this._tests.length; }
+  public getTest(testName: string) { return this._testsMap.get(testName); }
+  public getTestResults() { return this._results; }
   public run(): I_Runnable {
     //out('In run of ' + this.getName());
-    let funs: Function[] = new Array(this.tests.length);
-    for (var i = 0; i< this.tests.length; i++) {
-      let t: Test = this.tests[i];
+    let funs: Function[] = new Array(this._tests.length);
+    for (var i = 0; i< this._tests.length; i++) {
+      let t: Test = this._tests[i];
       var caught: any;
       //out('Aggergating async function for  ' + t.getName());
       funs[i] = async () => {
@@ -264,7 +278,7 @@ export class ApiTrial implements I_Named {
         try {
           if (t.isIgnored()) {
             console.log('IGNORING Test ' + t.getName());
-            this.ignored++;
+            this._ignored++;
           } else {
             //out('Running  ' + t.getName());
             //+ ' with ac ' + JSON.stringify(ac)
@@ -276,14 +290,19 @@ export class ApiTrial implements I_Named {
           e = '\n\nTest ' + t.getName() + ' Failed\n' + x + '\n';
           if (caught != undefined) {
             e += caught.stack;
+            var cause = caught.cause;
+            while (cause != undefined) {
+              e += "\n\n Cause: " + cause.name + " " + cause.message + "\n" + cause.stack;
+              cause = caught.cause;
+            }
           }
         }
         if (e == '') {
           //out('Assertion count is  ' + ac.getCount() + ' for test ' + t.getName());
-          this.results.push(new TestResult(ac.getCount(), t))
+          this._results.push(new TestResult(ac.getCount(), t))
         } else {
-          this.results.push(new TestResult(ac.getCount(), t, false, e));
-          this.failures++;
+          this._results.push(new TestResult(ac.getCount(), t, false, e));
+          this._failures++;
         }
         return;
       }
@@ -297,27 +316,27 @@ export class ApiTrial implements I_Named {
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */
 export class TrialSuite {
-  private name: string;
-  private out: I_Out;
-  private trials: ApiTrial[];
+  private _name: string;
+  private _out: I_Out;
+  private _trials: ApiTrial[];
 
 
   constructor(name: string, trials: ApiTrial[], out? : I_Out) {
-    this.name = name;
+    this._name = name;
     if (out == undefined) {
-     this.out = (s) => console.log(s);
+     this._out = (s) => console.log(s);
     } else {
-      this.out = out;
+      this._out = out;
     }
-    this.trials = trials;
+    this._trials = trials;
   }
 
   public run(): TrialSuite {
-    this.out('TrialSuite: run ' + this.name);
+    this._out('TrialSuite: run ' + this._name);
     let funAll = async () => {
-      let funs : Function[] = new Array(this.trials.length);
-      for (var i =0; i < this.trials.length; i++) {
-        let t: ApiTrial = this.trials[i]; 
+      let funs : Function[] = new Array(this._trials.length);
+      for (var i =0; i < this._trials.length; i++) {
+        let t: ApiTrial = this._trials[i];
         funs[i] = t.run();
       }
       return await Promise.all(funs);
@@ -331,28 +350,28 @@ export class TrialSuite {
     var tf = 0;
     var tt = 0;
     var ti = 0;
-    this.trials.forEach(t => {
-      this.out('\t' + t.getName() + ' ' + this.name);
+    this._trials.forEach(t => {
+      this._out('\t' + t.getName() + ' ' + this._name);
       ta += t.getAssertionCount();
       tf += t.getFailureCount();
       tt += t.getTestCount();
       ti += t.getIgnored();
-      this.out('\t\tAssertions: ' + t.getAssertionCount());
-      this.out('\t\tFailures: ' + t.getFailureCount());
-      this.out('\t\tTests: ' + t.getTestCount());
+      this._out('\t\tAssertions: ' + t.getAssertionCount());
+      this._out('\t\tFailures: ' + t.getFailureCount());
+      this._out('\t\tTests: ' + t.getTestCount());
       if (t.getFailureCount() != 0) {
         t.getTestResults().forEach(r => {
           if ( !r.isPass()) {
-            this.out('\t\t\t' + r.getName() + " : " + r.getErrorMessage());
+            this._out('\t\t\t' + r.getName() + " : " + r.getErrorMessage());
           }
         });
       }
     });
-    this.out('\n\nTotal for ' + this.trials.length + " Trials ");
-    this.out('\tAssertions: ' + ta);
-    this.out('\tFailures: ' + tf);
-    this.out('\tIgnored: ' + ti);
-    this.out('\tTests: ' + tt);
+    this._out('\n\nTotal for ' + this._trials.length + " Trials ");
+    this._out('\tAssertions: ' + ta);
+    this._out('\tFailures: ' + tf);
+    this._out('\tIgnored: ' + ti);
+    this._out('\tTests: ' + tt);
     return this;
   }
 
@@ -373,7 +392,7 @@ export class TrialSuite {
   printTestReportFiles(converter: I_XmlConverter): TrialSuite  {
     this.createDir('build');
     this.createDir('build/test-reports');
-    this.trials.forEach(t => {
+    this._trials.forEach(t => {
       var fname : string = 'build/test-reports/' + t.getName() + '.xml';
       console.log("creating file " + fname);
       var xmlString: string = converter.convertToXml(t);
