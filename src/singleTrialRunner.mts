@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { I_Proc } from './proc.mjs';
+import { I_Proc, ProcStub } from './proc.mjs';
 import { ApiTrial, Test, TrialSuite } from './tests4ts.mjs';
 
 export class SingleTrialRunner {
@@ -24,11 +24,19 @@ export class SingleTrialRunner {
     this._trials = trials;
   }
 
-  runTrial(proc: I_Proc): void {
+  runTrial(): SingleTrialRunner {
+    this.runTrialWithProc(new ProcStub());
+    return this;
+  }
+  
+  runTrialWithProc(proc: I_Proc): void {
     let args = proc.getArgv();
+    proc.log("SingleTrialRunner with " + this._trials.size + " trials and argv \n " + args);
     for (var i = 0; i < args.length; i++) {
-      let arg = args[i];
-      if (arg == '--trial') {
+      let arg = args[i].toLowerCase().trim();
+      proc.log(" checking arg " + arg);
+      if ('-trial'.includes(arg)) {
+        proc.log(" found arg -trial");
         if (i+1 < args.length) {
           let trialName = args[i +1];
           let trialSuiteName = trialName + ' Suite ';

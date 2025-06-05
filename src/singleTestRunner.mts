@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { I_Proc } from './proc.mjs';
+import { I_Proc, ProcStub } from './proc.mjs';
 import { ApiTrial, Test, TrialSuite } from './tests4ts.mjs';
 
 export class SingleTestRunner {
@@ -29,11 +29,20 @@ export class SingleTestRunner {
   }
 
 
-  runTrial(proc: I_Proc): void {
+  runTest(): SingleTestRunner {
+    this.runTestWithProc(new ProcStub());
+    return this;
+  }
+  
+  runTestWithProc(proc: I_Proc): void {
+
     let args = proc.getArgv();
+    proc.log("SingleTestRunner with " + this._trials.size + " trials and argv \n " + args);
     for (var i = 0; i < args.length; i++) {
-      let arg = args[i];
-      if (arg == '--test') {
+      let arg = args[i].toLowerCase().trim();
+      proc.log(" checking arg " + arg);
+      if ('-test'.includes(arg)) {
+        proc.log(" found arg -test ");
         if (i+1 < args.length) {
           let trialAndTestName: string = args[i +1];
           if (trialAndTestName.indexOf('.') == -1) {
@@ -43,6 +52,7 @@ export class SingleTestRunner {
           let trialDotTest = trialAndTestName.split('.', 2);
           let trialName = trialDotTest[0];
           let testName = trialDotTest[1];
+          proc.log("SingleTestRunner with Trial " + trialName + " test " + testName);
           let trialSuiteName = trialName + ' Suite ';
           let trial: ApiTrial = this._trials.get(trialName);
           if (trial == undefined) {

@@ -1,5 +1,6 @@
 {
   "bin": {
+    "proc": "./dist/tests4ts.ts.adligo.org/src/proc.mjs",
     "singleTestRunner": "./dist/tests4ts.ts.adligo.org/src/singleTestRunner.mjs",
     "singleTrialRunner": "./dist/tests4ts.ts.adligo.org/src/singleTrialRunner.mjs",
     "tests4ts": "./dist/tests4ts.ts.adligo.org/src/tests4ts.mjs"
