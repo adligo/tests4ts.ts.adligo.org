@@ -15,12 +15,13 @@
  */
 
 import { I_Proc, ProcStub } from './proc.mjs';
-import { ApiTrial, Test, TrialSuite } from './tests4ts.mjs';
+import { I_Test, I_Trial } from "@ts.adligo.org/i_tests4ts/src/i_tests4ts.mjs";
+import { TrialSuite } from './tests4ts.mjs';
 
 export class SingleTrialRunner {
-  private _trials: Map<string, ApiTrial>;
+  private _trials: Map<string, I_Trial>;
 
-  constructor(trials: Map<string, ApiTrial>) {
+  constructor(trials: Map<string, I_Trial>) {
     this._trials = trials;
   }
 
@@ -53,7 +54,7 @@ export class SingleTrialRunner {
 
   }
 }
-export function runTrial(trial: ApiTrial, trialSuiteName?: string): void {
+export function runTrial(trial: I_Trial, trialSuiteName?: string): void {
 
   if (trialSuiteName == undefined) {
     trialSuiteName = 'Generic Trial Suite ';

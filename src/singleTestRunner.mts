@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 import { I_Proc, ProcStub } from './proc.mjs';
-import { ApiTrial, Test, TrialSuite } from './tests4ts.mjs';
+import { I_Test, I_Trial } from "@ts.adligo.org/i_tests4ts/src/i_tests4ts.mjs";
+import { TrialSuite } from './tests4ts.mjs';
+import { ApiTrial } from './trials.mjs';
 
 export class SingleTestRunner {
   public static readonly THE_FOLLOWING_API_TRIAL_DOT_TEST = "The following ApiTrial.Test name needs a dot?";
 
-  private _trials: Map<string, ApiTrial>;
+  private _trials: Map<string, I_Trial>;
 
-  constructor(trials: Map<string, ApiTrial>) {
+  constructor(trials: Map<string, I_Trial>) {
     this._trials = new Map();
     for (const [trialName, trial] of trials) {
       this._trials.set(trialName, trial);
@@ -54,11 +56,11 @@ export class SingleTestRunner {
           let testName = trialDotTest[1];
           proc.log("SingleTestRunner with Trial " + trialName + " test " + testName);
           let trialSuiteName = trialName + ' Suite ';
-          let trial: ApiTrial = this._trials.get(trialName);
+          let trial: I_Trial = this._trials.get(trialName);
           if (trial == undefined) {
             proc.log("Unknown trial '" + trialName + "'");
           } else {
-            let test: Test = trial.getTest(testName);
+            let test: I_Test = trial.getTest(testName);
             if (test == undefined) {
               proc.log("Unknown test '" + testName + "' in trial '" + trialName + "'");
             }
@@ -72,7 +74,7 @@ export class SingleTestRunner {
   }
 }
 
-export function runTest(test: Test, trialSuiteName?: string, trialName?: string): void {
+export function runTest(test: I_Test, trialSuiteName?: string, trialName?: string): void {
 
   if (trialSuiteName == undefined) {
     trialSuiteName = 'Generic Trial Suite ';
