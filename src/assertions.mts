@@ -25,7 +25,7 @@ import {I_String} from "@ts.adligo.org/i_strings/dist/i_strings.mjs";
  */
 export class AssertionContext implements I_AssertionContextResult, I_AssertionContext {
     private static readonly CLAZZ_NAME = 'org.adligo.ts.tests4ts.AssertionContext';
-    _count: number = 0;
+    private _count: number = 0;
 
     public error(expected: string, runnable: () => void) {
         this._count++;
@@ -95,6 +95,21 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
         }
     }
 
+    notSame(expected: string, actual: string, message?: string): void {
+        throw new Error("TODO implement notSame");
+    }
+
+    thrown(error: Error, runner: I_Runnable, message?: string): void {
+        throw new Error("TODO implement thrown");
+    }
+
+    /**
+     * This protected method increments the assertion count
+     */
+    _increment() {
+        this._count++;
+    }
+    
     /**
      *
      * @param testFailed true when the test failed
@@ -129,13 +144,5 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
 
         throw Error(s + '\nThe expected is; \n\t\'' + expected + '\'\n\tHowever the actual is;\n\t\'' +
             actual + '\'');
-    }
-
-    notSame(expected: string, actual: string, message?: string): void {
-        throw new Error("TODO implement notSame");
-    }
-
-    thrown(error: Error, runner: I_Runnable, message?: string): void {
-        throw new Error("TODO implement thrown");
     }
 }
