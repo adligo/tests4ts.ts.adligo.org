@@ -1,10 +1,15 @@
 {
   "bin": {
-    "proc": "./dist/tests4ts.ts.adligo.org/src/proc.mjs",
-    "singleTestRunner": "./dist/tests4ts.ts.adligo.org/src/singleTestRunner.mjs",
-    "singleTrialRunner": "./dist/tests4ts.ts.adligo.org/src/singleTrialRunner.mjs",
-    "tests4ts": "./dist/tests4ts.ts.adligo.org/src/tests4ts.mjs"
+    "assertions.mjs": "./dist/assertions.mjs",
+    "coverage.mjs": "./dist/coverage.mjs",
+    "proc.mjs": "./dist/proc.mjs",
+    "results.mjs": "./dist/results.mjs",
+    "singleTestRunner.mjs": "./dist/singleTestRunner.mjs",
+    "singleTrialRunner.mjs": "./dist/singleTrialRunner.mjs",
+    "tests4ts.mjs": "./dist/tests4ts.mjs",
+    "trials.mjs": "./dist/trials.mjs"
   },
+
   "bugs": {
     "url": "https://github.com/adligo/tests4ts.ts.adligo.org/issues"
   },
@@ -28,5 +33,5 @@
   "sharedNodeModuleProjectSLinks": ["slink_group_deps.ts.adligo.org", "fab_group_deps.ts.adligo.org"],
   "type": "module",
   "types": "src/tests4ts.mts",
-  "version": "0.4.0"
+  "version": "0.4.1"
 }
