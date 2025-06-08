@@ -1,13 +1,21 @@
 {
   "bin": {
     "assertions.mjs": "./dist/assertions.mjs",
+    "assertions.mts": "./src/assertions.mts",
     "coverage.mjs": "./dist/coverage.mjs",
+    "coverage.mts": "./src/coverage.mts",
     "proc.mjs": "./dist/proc.mjs",
+    "proc.mts": "./src/proc.mts",
     "results.mjs": "./dist/results.mjs",
+    "results.mts": "./src/results.mts",
     "singleTestRunner.mjs": "./dist/singleTestRunner.mjs",
+    "singleTestRunner.mts": "./src/singleTestRunner.mts",
     "singleTrialRunner.mjs": "./dist/singleTrialRunner.mjs",
+    "singleTrialRunner.mts": "./src/singleTrialRunner.mts",
     "tests4ts.mjs": "./dist/tests4ts.mjs",
-    "trials.mjs": "./dist/trials.mjs"
+    "tests4ts.mts": "./src/tests4ts.mts",
+    "trials.mjs": "./dist/trials.mjs",
+    "trials.mts": "./src/trials.mts"
   },
 
   "bugs": {
@@ -33,5 +41,5 @@
   "sharedNodeModuleProjectSLinks": ["slink_group_deps.ts.adligo.org", "fab_group_deps.ts.adligo.org"],
   "type": "module",
   "types": "src/tests4ts.mts",
-  "version": "0.4.1"
+  "version": "0.4.2"
 }
