@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 import {I_AssertionContext, I_AssertionContextConsumer, I_AssertionContextResult, I_Runnable} from
-        '@ts.adligo.org/i_tests4ts/src/i_tests4ts.mjs';
-import {I_Equatable} from "@ts.adligo.org/i_obj/src/i_obj.mjs";
-import {I_String} from "@ts.adligo.org/i_strings/src/i_strings.mjs";
+        '@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs';
+import {I_Equatable} from "@ts.adligo.org/i_obj/dist/i_obj.mjs";
+import {I_String} from "@ts.adligo.org/i_strings/dist/i_strings.mjs";
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */

@@ -24,7 +24,7 @@ import {
   I_Test,
   I_TestResult, I_TestResultFactory,
   I_Trial
-} from "@ts.adligo.org/i_tests4ts/src/i_tests4ts.mjs";
+} from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
 import { TestResult, TestResultParams} from "./results.mjs";
 
 export class CoverageCleaner {

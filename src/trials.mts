@@ -20,10 +20,10 @@
 import { I_AssertionContext,I_AssertionContextConsumer, I_AssertionContextFactory,
   I_FileConverter, I_Runnable, I_Test,
   I_TestResult, I_TestResultFactory, I_Trial, TrialType
-} from "@ts.adligo.org/i_tests4ts/src/i_tests4ts.mjs";
+} from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
 import {AssertionContext} from "./assertions.mjs";
 import {TrialSuite} from "./tests4ts.mjs";
-import {I_Named} from "@ts.adligo.org/i_strings/src/i_strings.mjs";
+import {I_Named} from "@ts.adligo.org/i_strings/dist/i_strings.mjs";
 
 export class TrialParams implements I_Named {
     public static of(trialName: string): TrialParams {

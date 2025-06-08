@@ -15,7 +15,7 @@
  */
 
 import { I_Proc, ProcStub } from './proc.mjs';
-import { I_Test, I_Trial } from "@ts.adligo.org/i_tests4ts/src/i_tests4ts.mjs";
+import { I_Test, I_Trial } from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
 import { TrialSuite } from './tests4ts.mjs';
 
 export class SingleTrialRunner {

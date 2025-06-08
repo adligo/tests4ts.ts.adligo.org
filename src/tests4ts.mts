@@ -23,8 +23,8 @@ import * as path from 'path';
 // The following commented out xml tags with slinks will flag to the slink command line program, that these paths can be modfied
 // from the slink logic instead of hard coding them like I have currently done.
 //<slinks>
-import {I_Out} from '@ts.adligo.org/i_io/src/i_io.mjs';
-import {I_Named} from '@ts.adligo.org/i_strings/src/i_strings.mjs';
+import {I_Out} from '@ts.adligo.org/i_io/dist/i_io.mjs';
+import {I_Named} from '@ts.adligo.org/i_strings/dist/i_strings.mjs';
 import {TestResult, TestResultParams} from "./results.mjs";
 import {
   I_AssertionContext,
@@ -34,7 +34,7 @@ import {
   I_Test,
   I_TestResult, I_TestResultFactory,
   I_Trial
-} from "@ts.adligo.org/i_tests4ts/src/i_tests4ts.mjs";
+} from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
 import {AssertionContext} from "./assertions.mjs";
 
 //</slinks>
