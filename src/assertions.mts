@@ -66,7 +66,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
 
     getClass(): string {
-        return this.CLAZZ_NAME;
+        return AssertionContext.CLAZZ_NAME;
     }
 
     isFalse(check: boolean, message?: string) {
