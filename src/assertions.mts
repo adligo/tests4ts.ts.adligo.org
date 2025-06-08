@@ -24,8 +24,8 @@ import {I_String} from "@ts.adligo.org/i_strings/dist/i_strings.mjs";
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */
 export class AssertionContext implements I_AssertionContextResult, I_AssertionContext {
-    private _clazzName = 'org.adligo.ts.tests4ts.AssertionContext';
-    private _count: number = 0;
+    private static readonly CLAZZ_NAME = 'org.adligo.ts.tests4ts.AssertionContext';
+    _count: number = 0;
 
     public error(expected: string, runnable: () => void) {
         this._count++;
@@ -66,7 +66,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
 
     getClass(): string {
-        return this._clazzName;
+        return this.CLAZZ_NAME;
     }
 
     isFalse(check: boolean, message?: string) {

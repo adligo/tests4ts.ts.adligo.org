@@ -41,5 +41,5 @@
   "sharedNodeModuleProjectSLinks": ["slink_group_deps.ts.adligo.org", "fab_group_deps.ts.adligo.org"],
   "type": "module",
   "types": "src/tests4ts.mts",
-  "version": "0.4.3"
+  "version": "0.4.4"
 }
