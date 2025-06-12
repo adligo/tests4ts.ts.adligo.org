@@ -232,14 +232,14 @@ export class TrialSuite {
     return this;
   }
 
-  createDir(dirPath) {
+  createDir(dirPath: string) {
     const absolutePath = path.resolve(dirPath); // Resolve to an absolute path
     if (!fs.existsSync(absolutePath)) {
       fs.mkdirSync(absolutePath, { recursive: true }); // Create directory, including parent directories if they don't exist
     }
   }
 
-  createFile(filePath, content) {
+  createFile(filePath: string, content: string) {
     const absolutePath = path.resolve(filePath);
     const dirPath = path.dirname(absolutePath);
     this.createDir(dirPath); // Ensure directory exists before creating file
