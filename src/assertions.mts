@@ -99,6 +99,17 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
         throw new Error("TODO implement notSame");
     }
 
+    notNull(expected: string, message?: string): void {
+      this._count++;
+      if (expected == undefined) {
+        var s = '';
+        if (message != undefined) {
+            s = s + message;
+        }
+        throw Error(s + '\nThe expected null.');
+      }
+    }
+    
     thrown(error: Error, runner: I_Runnable, message?: string): void {
         throw new Error("TODO implement thrown");
     }
