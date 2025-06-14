@@ -16,12 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { I_AssertionContext, I_AssertionContextConsumer, I_AssertionContextResult, I_Runnable } from
+import { I_AssertionContext, I_AssertionContextConsumer, I_AssertionContextResult, I_EquatableString, I_Runnable } from
   '@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs';
 
-import { I_Classifiable, I_Equatable, I_Hashable } from '@ts.adligo.org/i_obj/dist/i_obj.mjs';
+import { I_Equatable } from '@ts.adligo.org/i_obj/dist/i_obj.mjs';
 import { I_String } from '@ts.adligo.org/i_strings/dist/i_strings.mjs';
-import { Obj, Strings } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
+import { Errors, Objs, Strings } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */
@@ -47,10 +47,10 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
   }
 
-  equals(expected: I_Equatable | any, actual: any, message?: string) {
+  equals(expected: I_EquatableString | I_Equatable | I_String | string | any, actual: I_String | string | any, message?: string): void {
     var test = false;
     if (expected != undefined) {
-      if (Obj.isEquatable(expected)) {
+      if (Objs.isEquatable(expected)) {
         test = !expected.equals(actual);
       } else {
         test = expected != actual;
@@ -81,9 +81,9 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
   }
 
-  notEquals(expected: I_Equatable | any, actual: any, message?: string) {
+  notEquals(expected: I_EquatableString | I_Equatable | I_String | string | any, actual: I_String | string | any, message?: string): void {
     this._count++;
-    if (Obj.isEquatable(expected)) {
+    if (Objs.isEquatable(expected)) {
       let test = expected.equals(actual);
       this.eqNeqIn(test, expected, actual, message);
     } else {
@@ -91,14 +91,14 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
   }
 
-  same(expected: any, actual: any, message?: string) {
+  same(expected: I_String | string | any, actual: I_String | string | any, message?: string): void {
     this._count++;
     if (expected != actual) {
       this.stringMatchError(expected, actual, message);
     }
   }
 
-  notSame(expected: any, actual: any, message?: string): void {
+  notSame(expected: I_String | string | any,  actual: I_String | string | any, message?: string): void {
     this._count++;
     if (expected == actual) {
       this.stringMatchError(expected, actual, message);
@@ -116,8 +116,56 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
   }
 
-  thrown(error: Error, runner: I_Runnable, message?: string): void {
-    throw new Error("TODO implement thrown");
+  thrown(expected: Error, runner: I_Runnable, message?: string): void {
+    var actual;
+    try {
+      runner();
+    } catch (e) {
+      actual = e;
+    }
+    this.thrownIn(expected, actual, 1,  message);
+  }
+
+  private thrownIn(expected: any, actual: any, counter: number, message?: string): void {
+    this._count++;
+    if (actual == undefined) {
+      throw new Error('' + message + '\n\tNo Error was thrown.');
+    }
+
+    this._count++;
+    if ( !Errors.hasName(expected)) {
+      throw new Error('' + message + "\n\tThe expected error doesn't have a name?");
+    }
+    this._count++;
+    if ( !Errors.hasName(actual)) {
+      throw new Error('' + message + "\n\tThe actual error doesn't have a name?");
+    }
+    this._count++;
+    if (expected.name != actual.name) {
+      this.eqNeqIn(true, expected.name, actual.name, message);
+    }
+
+    this._count++;
+    if ( !Errors.hasMessage(expected)) {
+      throw new Error('' + message + "\n\tThe expected error doesn't have a message?");
+    }
+    this._count++;
+    if ( !Errors.hasMessage(actual)) {
+      throw new Error('' + message + "\n\tThe actual error doesn't have a message?");
+    }
+    this._count++;
+    if (expected.message != actual.message) {
+      this.eqNeqIn(true, expected.message, actual.message, message);
+    }
+
+    if (Errors.hasCause(expected)) {
+      this._count++;
+      if (Errors.hasCause(actual)) {
+        this.thrownIn(expected.cause, actual.cause, counter + 1, message);
+      } else {
+        throw new Error('' + message + "\n\tThe expected error has a cause, however, the actual error does NOT!");
+      }
+    }
   }
 
   /**
@@ -127,6 +175,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     this._count++;
   }
 
+
   /**
    *
    * @param testFailed true when the test failed
@@ -135,21 +184,14 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
    * @param message
    * @private
    */
-  private eqNeqIn(testFailed: boolean, expected: I_Equatable, actual: any, message?: string) {
+  private eqNeqIn(testFailed: boolean, expected: I_String | string | any, actual: I_String | string | any, message?: string) {
     this._count++;
     //out('in eqNeqIn with test = ' +test)
     if (testFailed) {
-      let expectedAsString: I_String = expected as I_String;
-      let actualAsString: I_String = actual as I_String;
-      if (expectedAsString.toString != undefined && actualAsString.toString != undefined) {
-        this.stringMatchError(expectedAsString.toString(), actualAsString.toString(), message);
-      } else if (expectedAsString.toString != undefined) {
-        this.stringMatchError(expectedAsString.toString(), 'actual didn\'t implement I_String ... ' + actual, message);
-      } else if (actualAsString.toString != undefined) {
-        this.stringMatchError('expected didn\'t implement I_String ... ' + expected, actualAsString.toString(), message);
-      } else {
-        this.stringMatchError('expected didn\'t implement I_String ... ' + expected,
-          'actual didn\'t implement I_String ... ' + actual, message);
+      let expectedAsString: string = this.toString(expected);
+      let actualAsString: string = this.toString(actual)
+      if (expectedAsString != actualAsString) {
+        this.stringMatchError(expectedAsString, actual, message);
       }
     }
   }
@@ -161,5 +203,29 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
 
     throw Error(s + '\nThe expected is; \n\t\'' + expected + '\'\n\tHowever the actual is;\n\t\'' +
       actual + '\'');
+  }
+
+  private isEquals(obj: I_EquatableString | I_Equatable | string | any, other: any): boolean {
+    if (obj == undefined) {
+      return false;
+    }
+    if (Objs.isEquatable(obj)) {
+      return obj.equals(other);
+    }
+    return obj == other;
+  }
+
+  private toString(obj: I_String | string | any): string {
+    if (obj == undefined) {
+      return obj;
+    }
+    if (Strings.isI_String(obj)) {
+      return (obj as I_String).toString();
+    }
+    if ( typeof obj === 'string' ) {
+      return obj;
+    }
+    //implicit toString conversion, but will likely turn into '[Object]'
+    return '' + obj;
   }
 }
