@@ -157,8 +157,25 @@ abstract class AbstractTrial implements I_Trial {
 }
 
 export class ApiTrial extends AbstractTrial implements I_Trial {
+
+    getAssertionCount(): number { return super.getAssertionCount(); }
+
+    getFailureCount(): number { return super.getFailureCount(); }
+
+    getIgnored(): any { return super.getIgnored(); }
+
+    getTestCount(): number { return super.getTestCount(); }
+
+    getTest(testName: string): I_Test { return super.getTest(testName); }
+
+    getTestResults(): I_TestResult[] { return super.getTestResults(); }
+
     getType() {
         return TrialType.ApiTrial;
+    }
+    
+    run(assertionCtxFactory: I_AssertionContextFactory, testResultFactory: I_TestResultFactory): I_Runnable {
+      return super.run(assertionCtxFactory, testResultFactory);
     }
 }
 
@@ -183,7 +200,26 @@ export class SourceFileTrial extends AbstractTrial implements I_Trial {
         super(trialNameOrP, tests);
     }
 
+
+    getAssertionCount(): number { return super.getAssertionCount(); }
+
+    getFailureCount(): number { return super.getFailureCount(); }
+
+    getIgnored(): any { return super.getIgnored(); }
+
+    getTestCount(): number { return super.getTestCount(); }
+
+    getTest(testName: string): I_Test { return super.getTest(testName); }
+
+    getTestResults(): I_TestResult[] { return super.getTestResults(); }
+
     getType() {
         return TrialType.SourceFileTrial;
     }
+
+    run(assertionCtxFactory: I_AssertionContextFactory, testResultFactory: I_TestResultFactory): I_Runnable {
+      return super.run(assertionCtxFactory, testResultFactory);
+    }
+    
+
 }
