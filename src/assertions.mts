@@ -21,7 +21,8 @@ import { I_AssertionContext, I_AssertionContextConsumer, I_AssertionContextResul
 
 import { I_Equatable } from '@ts.adligo.org/i_obj/dist/i_obj.mjs';
 import { I_String } from '@ts.adligo.org/i_strings/dist/i_strings.mjs';
-import { Errors, Objs, Strings } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
+import { Errors, Objs, Maps, Strings } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
+import {equal} from "node:assert";
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */
@@ -48,8 +49,10 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
   }
 
   equals(expected: I_EquatableString | I_Equatable | I_String | string | any, actual: I_String | string | any, message?: string): void {
-    var test = this.notEqualsCheckIn(expected, actual);
-    this.eqNeqIn(test, expected, actual, message);
+    if (!this.equalsDeepCheckIn(expected, actual, message)) {
+      var test = this.notEqualsCheckIn(expected, actual);
+      this.eqNeqIn(test, expected, actual, message);
+    }
   }
 
 
@@ -183,8 +186,103 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
   }
 
+  /**
+   * Perform a deep check of a collection
+   * @param expected
+   * @param actual
+   * @param message
+   * @return Returns true if this was an Array or a Map and subsequent checks occured, false otherwise.
+   * @private
+   */
+  private equalsDeepCheckIn(expected: any, actual: any, message?: string): boolean {
+    //setup messageFormatting
+    var sMsg = ''
+    if (message == undefined || message == null) {
+      //do nothing
+    } else {
+      sMsg = message;
+    }
 
-  private notEqualsCheckIn(expected: any, actual: any) {
+    if (Array.isArray(expected)) {
+      this._count++;
+      if (!Array.isArray(actual)) {
+        this.stringMatchError('isArray == true', this.toString(actual), message);
+      }
+      let eArray = expected as Array<any>;
+      let aArray = actual as Array<any>;
+      this._count++;
+      var len = eArray.length;
+      if (aArray.length < len) {
+        len = aArray.length;
+      }
+      //compare everything we can to attempt to be as informative as possible
+      //recurse to the equals method
+      for (let i = 0; i < len; i++) {
+        this.equals(eArray[i], aArray[i], sMsg + '\n\t\tThe array element at the following index should match idx: ' + i );
+      }
+      if (eArray.length != aArray.length) {
+        this.stringMatchError('Array size ' + eArray.length, 'Array size ' + aArray.length, message);
+      }
+      return true;
+    } else if (Maps.isMap(expected)) {
+      this._count++;
+      if (!Maps.isMap(actual)) {
+        this.stringMatchError('isMap == true', this.toString(actual), message);
+      }
+      let eMap = expected as Map<any, any>;
+      let aMap = actual as Map<any, any>;
+      this._count++;
+      var len = eMap.size;
+      var over = eMap;
+      if (aMap.size < len) {
+        len = aMap.size;
+        over = aMap;
+      }
+      //compare everything we can to attempt to be as informative as possible
+      //recurse to the equals method
+      for (const key of over.keys()) {
+        this._count++;
+        if (eMap.has(key)) {
+          if (aMap.has(key)) {
+            //they both have the key
+          } else {
+            throw new Error(sMsg + "\n\t The expected Map has the following key, which is missing from the actual Map; \n\t\t'" + key + "'");
+          }
+        } else {
+          throw new Error(sMsg + "\n\t The expected Map is missing the following key, which is present in the actual Map; \n\t\t'" + key + "'");
+        }
+        this.equals(eMap.get(key), aMap.get(key), sMsg + "\n\tThe value with the following key should match;\n\t\t '" + key + "'\n");
+      }
+      //
+      let allKeys:Set<any> = new Set(eMap.keys());
+      allKeys = allKeys.union(new Set(aMap.keys()));
+      allKeys = allKeys.difference(new Set(over.keys()));
+      this._count++;
+      //this is a bug in JavaScripts Map implementation
+      //console.log('before check allKeys.size is ' + allKeys.size);
+      if (allKeys.size >= 1) {
+        let keys = new Set(allKeys.keys());
+        //console.log("the single key is '" + keys[0] + "'");
+        if (allKeys.size == 1 && keys[0] == undefined)  {
+          console.log("This is a bug in EsNext why would a Map have a undefined key, someone please fix! ");
+        } else {
+          if (eMap === over) {
+            throw new Error(sMsg + "\n\tThe following keys are missing from the expected Map;\n\t\t" + [...keys] + "\n");
+          } else {
+            throw new Error(sMsg + "\n\tThe following keys are missing from the actual Map;\n\t\t" +  [...keys]  + "\n");
+          }
+        }
+      }
+      this._count++;
+      if (eMap.size != aMap.size) {
+        this.stringMatchError('Map size ' + eMap.size, 'Map size ' + aMap.size, message);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private notEqualsCheckIn(expected: any, actual: any): boolean {
     var checkNotEqual = false;
     if (typeof expected === 'undefined' && expected == undefined) {
       if (typeof actual === 'undefined' && actual == undefined) {
@@ -241,7 +339,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
       s = s + message;
     }
 
-    throw Error(s + '\nThe expected is; \n\t\'' + expected + '\'\n\tHowever the actual is;\n\t\'' +
+    throw Error(s + '\nThe expected is; \n\t\'' + expected + '\'\n\n\tHowever the actual is;\n\t\'' +
       actual + '\'');
   }
 
