@@ -48,16 +48,10 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
   }
 
   equals(expected: I_EquatableString | I_Equatable | I_String | string | any, actual: I_String | string | any, message?: string): void {
-    var test = false;
-    if (expected != undefined) {
-      if (Objs.isEquatable(expected)) {
-        test = !expected.equals(actual);
-      } else {
-        test = expected != actual;
-      }
-    }
+    var test = this.notEqualsCheckIn(expected, actual);
     this.eqNeqIn(test, expected, actual, message);
   }
+
 
   getCount(): number {
     return this._count;
@@ -82,25 +76,20 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
   }
 
   notEquals(expected: I_EquatableString | I_Equatable | I_String | string | any, actual: I_String | string | any, message?: string): void {
-    this._count++;
-    if (Objs.isEquatable(expected)) {
-      let test = expected.equals(actual);
-      this.eqNeqIn(test, expected, actual, message);
-    } else {
-      this.eqNeqIn(expected != actual, expected, actual, message);
-    }
+    var test = !this.notEqualsCheckIn(expected, actual);
+    this.eqNeqIn(test, expected, actual, message);
   }
 
   same(expected: I_String | string | any, actual: I_String | string | any, message?: string): void {
     this._count++;
-    if (expected != actual) {
+    if ( !(expected === actual)) {
       this.stringMatchError(expected, actual, message);
     }
   }
 
   notSame(expected: I_String | string | any,  actual: I_String | string | any, message?: string): void {
     this._count++;
-    if (expected == actual) {
+    if (expected === actual) {
       this.stringMatchError(expected, actual, message);
     }
   }
@@ -190,11 +179,62 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     if (testFailed) {
       let expectedAsString: string = this.toString(expected);
       let actualAsString: string = this.toString(actual)
-      if (expectedAsString != actualAsString) {
-        this.stringMatchError(expectedAsString, actual, message);
-      }
+      this.stringMatchError(expectedAsString, actualAsString, message);
     }
   }
+
+
+  private notEqualsCheckIn(expected: any, actual: any) {
+    var checkNotEqual = false;
+    if (typeof expected === 'undefined' && expected == undefined) {
+      if (typeof actual === 'undefined' && actual == undefined) {
+        return checkNotEqual;
+      } else {
+        //the actual is not undefined so fail
+        return true;
+      }
+    }
+    if (typeof expected === 'object' && expected == null) {
+      if (typeof actual === 'object' && actual == null) {
+        return checkNotEqual;
+      } else {
+        //the actual is not null so fail
+        return true;
+      }
+    }
+    if (typeof expected === 'number' && isNaN(expected)) {
+      if (typeof actual === 'number' && isNaN(actual)) {
+        return checkNotEqual;
+      } else {
+        //the actual is not a NaN so fail
+        return true;
+      }
+    }
+
+    if (Objs.isEquatable(expected)) {
+      checkNotEqual = !expected.equals(actual);
+    } else {
+      if (expected === actual) {
+        //there the same so leave the test variable false (test pass)
+      } else {
+        //there not the same so check types
+        if (typeof expected === typeof actual) {
+          //there the same type so they might be equal
+          if (expected == actual) {
+            //there also loosly equal so leave the test variable false (test pass)
+          } else {
+            //there not loosly equal so fail
+            checkNotEqual = true;
+          }
+        } else {
+          //there not the same type so fail
+          checkNotEqual = true;
+        }
+      }
+    }
+    return checkNotEqual;
+  }
+
   private stringMatchError(expected: string, actual: string, message?: string) {
     var s = '';
     if (message != undefined) {
@@ -224,6 +264,10 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
     if ( typeof obj === 'string' ) {
       return obj;
+    }
+
+    if ( typeof obj === 'object' ) {
+      return JSON.stringify(obj);
     }
     //implicit toString conversion, but will likely turn into '[Object]'
     return '' + obj;
