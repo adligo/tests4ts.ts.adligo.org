@@ -51,9 +51,11 @@ export class SingleTestRunner {
             proc.log(SingleTestRunner.THE_FOLLOWING_API_TRIAL_DOT_TEST);
             return;
           }
-          let trialDotTest = trialAndTestName.split('.', 2);
-          let trialName = trialDotTest[0];
-          let testName = trialDotTest[1];
+          let trialDotTest = trialAndTestName.split('.');
+          let namespaceParts = trialDotTest.length
+          let trialParts = trialDotTest.slice(0, namespaceParts - 1);
+          let trialName = trialParts.join('.');
+          let testName = trialDotTest[namespaceParts - 1];
           proc.log("SingleTestRunner with Trial " + trialName + " test " + testName);
           let trialSuiteName = trialName + ' Suite ';
           let trial: I_Trial = this._trials.get(trialName);
@@ -74,13 +76,6 @@ export class SingleTestRunner {
   }
 }
 
-export function runTest(test: I_Test, trialSuiteName?: string, trialName?: string): void {
-
-  if (trialSuiteName == undefined) {
-    trialSuiteName = 'Generic Trial Suite ';
-  }
-  if (trialName == undefined) {
-    trialName = 'SingleTestApiTrial';
-  }
-  new TrialSuite(trialSuiteName, [new ApiTrial(trialName, [test])]).run().printTextReport();
+export function runTest(trial: I_Trial, testName: string): void {
+  new TrialSuite(trial.getName(), [new ApiTrial(trial.getName(), [trial.getTest(testName)])]).run().printTextReport();
 }
