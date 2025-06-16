@@ -239,8 +239,8 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
       let eSet = expected as Set<any>;
       let aSet = actual as Set<any>;
 
-      let eNotInA = eSet.difference(aSet);
-      let aNotInE = aSet.difference(eSet);
+      let eNotInA = Sets.difference(eSet, aSet);
+      let aNotInE = Sets.difference(aSet, eSet);
 
       this._count++;
       if (eNotInA.size == 0 && aNotInE.size == 0) {
@@ -820,8 +820,8 @@ export class FastEqualsRecursiveChecker {
         let aSet = actual as Set<any>;
         counter.increment();
         if (eSet.size == aSet.size) {
-          let aNotInE = eSet.difference(aSet);
-          let eNotInA = aSet.difference(eSet);
+          let aNotInE = Sets.difference(eSet, aSet);
+          let eNotInA = Sets.difference(aSet, eSet);
           if (eNotInA.size != 0 || aNotInE.size != 0) {
             counter.setInfo(new ComparisionSetInfo(eNotInA, aNotInE, false));
             return false;
