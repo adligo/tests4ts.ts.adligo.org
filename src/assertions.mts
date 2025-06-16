@@ -28,7 +28,6 @@ import {
 import { I_Equatable } from '@ts.adligo.org/i_obj/dist/i_obj.mjs';
 import { I_String } from '@ts.adligo.org/i_strings/dist/i_strings.mjs';
 import { Errors, Objs, Maps, Sets, Strings } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
-import { equal } from "node:assert";
 
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
