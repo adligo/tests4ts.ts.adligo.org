@@ -231,6 +231,8 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
         this.stringMatchError('Array size ' + eArray.length, 'Array size ' + aArray.length, message);
       }
       return true;
+      /*
+      yanking all Set tests until it is supported on the node CLI
     } else if (Sets.isSet(expected)) {
       this._count++;
       if (!Sets.isSet(actual)) {
@@ -250,6 +252,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
       } else {
         throw new Error(sMsg + "\n\tThe following elements are missing from the actual Set;\n\t\t" + [...eNotInA] + "\n");
       }
+      */
     } else if (Maps.isMap(expected)) {
       this._count++;
       if (!Maps.isMap(actual)) {
@@ -813,6 +816,8 @@ export class FastEqualsRecursiveChecker {
       } else {
         return false;
       }
+      /*
+      removing all Set stuff until it works on the node CLI
     } else if (Sets.isSet(expected)) {
       counter.increment();
       if (Sets.isSet(actual)) {
@@ -835,6 +840,7 @@ export class FastEqualsRecursiveChecker {
       } else {
         return false;
       }
+      */
     } else if (Maps.isMap(expected)) {
       counter.increment();
       if (Maps.isMap(actual)) {
