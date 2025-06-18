@@ -472,10 +472,10 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
   private stringMatchError(expected: string, actual: string, message?: string) {
     var s = '';
     if (message != undefined) {
-      s = s + message;
+      s = s + message + '\n';
     }
 
-    throw Error(s + '\nThe expected is; \n\t\'' + expected + '\'\n\n\tHowever the actual is;\n\t\'' +
+    throw Error(s + 'The expected is; \n\t\'' + expected + '\'\n\n\tHowever the actual is;\n\t\'' +
       actual + '\'');
   }
 
@@ -510,7 +510,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
 
 export class ComparisionNodeMutant implements I_ComparisionNode {
   private _actual: any;
-  private _assertionCount: number = 1;
+  private _assertionCount: number = 0;
   private _expected: any;
   private _info: I_ComparisionBaseInfo;
   private _infoType: ComparisonNodeInfoType;
@@ -733,27 +733,6 @@ export class DeepEqualsRecursiveChecker {
 export class FastEqualsRecursiveChecker {
 
   public fastEquals(expected: any, actual: any): RecursiveEqualsResult {
-    // undefined, null and NaN checks
-    if (typeof expected === 'undefined' && expected == undefined) {
-      if (typeof actual === 'undefined' && actual == undefined) {
-        return new RecursiveEqualsResult(new ComparisionNodeMutant(expected, actual), true);
-      } else {
-        return new RecursiveEqualsResult(new ComparisionNodeMutant(expected, actual), false);
-      }
-    } else if (typeof expected === 'object' && expected == null) {
-      if (typeof actual === 'object' && actual == null) {
-        return new RecursiveEqualsResult(new ComparisionNodeMutant(expected, actual), true);
-      } else {
-        return new RecursiveEqualsResult(new ComparisionNodeMutant(expected, actual), false);
-      }
-    } else if (typeof expected === 'number' && isNaN(expected)) {
-      if (typeof actual === 'number' && isNaN(actual)) {
-        return new RecursiveEqualsResult(new ComparisionNodeMutant(expected, actual), true);
-      } else {
-        return new RecursiveEqualsResult(new ComparisionNodeMutant(expected, actual), false);
-      }
-    }
-
     let counter = new ComparisionNodeMutant(expected, actual);
     if (this.equalsFastIn(expected, actual, true, counter)) {
       return new RecursiveEqualsResult(counter, true);

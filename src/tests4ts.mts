@@ -37,6 +37,8 @@ import {
 } from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
 import {AssertionContext} from "./assertions.mjs";
 
+//Hack to fix the formatting in WebStorms console?
+process.env.LC_CTYPE='UTF-8';
 //</slinks>
 
 function out(message: string ) {
@@ -207,28 +209,30 @@ export class TrialSuite {
     var tf = 0;
     var tt = 0;
     var ti = 0;
+    var summaryMessage = '\n\n\n---------------------  Test Results -----------------------';
     this._trials.forEach(t => {
       this._out('\t' + t.getName() + ' ' + this._name);
       ta += t.getAssertionCount();
       tf += t.getFailureCount();
       tt += t.getTestCount();
       ti += t.getIgnored();
-      this._out('\t\tAssertions: ' + t.getAssertionCount());
-      this._out('\t\tFailures: ' + t.getFailureCount());
-      this._out('\t\tTests: ' + t.getTestCount());
+      summaryMessage += '\n\t\tAssertions: ' + t.getAssertionCount();
+      summaryMessage += '\n\t\tFailures: ' + t.getFailureCount();
+      summaryMessage += '\n\t\tTests: ' + t.getTestCount();
       if (t.getFailureCount() != 0) {
         t.getTestResults().forEach(r => {
           if ( !r.isPass()) {
-            this._out('\t\t\t' + r.getName() + " : " + r.getErrorMessage());
+            summaryMessage += '\n\t\t\t' + r.getName() + " : " + r.getErrorMessage();
           }
         });
       }
     });
-    this._out('\n\nTotal for ' + this._trials.length + " Trials ");
-    this._out('\tAssertions: ' + ta);
-    this._out('\tFailures: ' + tf);
-    this._out('\tIgnored: ' + ti);
-    this._out('\tTests: ' + tt);
+    summaryMessage += '\n\n\nTotal for ' + this._trials.length + " Trials ";
+    summaryMessage += '\n\tAssertions: ' + ta;
+    summaryMessage += '\n\tFailures: ' + tf;
+    summaryMessage += '\n\tIgnored: ' + ti;
+    summaryMessage += '\n\tTests: ' + tt;
+    this._out(summaryMessage);
     return this;
   }
 

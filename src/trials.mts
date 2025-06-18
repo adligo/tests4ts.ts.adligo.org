@@ -26,6 +26,8 @@ import { AssertionContext } from "./assertions.mjs";
 import { TrialSuite } from "./tests4ts.mjs";
 import { I_Named } from "@ts.adligo.org/i_strings/dist/i_strings.mjs";
 
+import { Errors } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
+
 export class TrialParams implements I_Named {
   public static of(trialName: string): TrialParams {
     return new TrialParams(trialName);
@@ -135,24 +137,11 @@ abstract class AbstractTrial implements I_Trial {
             t.run(ac)
           }
         } catch (x: any) {
-          caught = x;
-          failureErrorMessage = '\n\nTest ' + t.getName() + ' Failed\n' + x + '\n';
-          if (caught != undefined) {
-            failureErrorMessage += caught.stack;
-            var cause = caught.cause;
-            while (cause != undefined) {
-              failureErrorMessage += "\n\n Cause: " + cause.name + " " + cause.message + "\n" + cause.stack;
-              cause = caught.cause;
-            }
-          }
+          failureErrorMessage = '\n\nTest ' + t.getName() + ' Failed\n'
+          failureErrorMessage = this.appendErrorDetails(x, failureErrorMessage);
         }
-        if (failureErrorMessage == '') {
-          //out('Assertion count is  ' + ac.getCount() + ' for test ' + t.getName());
-          this._results.push(testResultFactor.newTestResult(ac.getCount(), t));
-        } else {
-          this._results.push(testResultFactor.newTestResultFailure(ac.getCount(), t, failureErrorMessage));
-          this._failures++;
-        }
+        this._results.push(testResultFactor.newTestResultFailure(ac.getCount(), t, failureErrorMessage));
+        this._failures++;
         return;
       }
       funs[i]();
@@ -160,6 +149,27 @@ abstract class AbstractTrial implements I_Trial {
     return async () => {
       return await Promise.all(funs)
     };
+  }
+
+  private appendErrorDetails(caught: any, failureErrorMessage: string) {
+    if (caught != undefined) {
+      if (Errors.hasStack(caught)) {
+        //the stack has the error message
+        failureErrorMessage += caught.stack;
+      } else if (Errors.hasMessage(caught)) {
+        failureErrorMessage += caught.message + '\n';
+      } else {
+        failureErrorMessage += +caught + '\n';
+      }
+
+      var cause = caught.cause;
+      while (cause != undefined) {
+        failureErrorMessage += "\n\n Cause: " + cause.name;
+        failureErrorMessage = this.appendErrorDetails(cause, failureErrorMessage);
+        cause = caught.cause;
+      }
+    }
+    return failureErrorMessage;
   }
 }
 
