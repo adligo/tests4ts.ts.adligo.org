@@ -30,7 +30,22 @@ import {
 
 import { I_Equatable } from '@ts.adligo.org/i_obj/dist/i_obj.mjs';
 import { I_String } from '@ts.adligo.org/i_strings/dist/i_strings.mjs';
-import { Errors, Objs, Maps, Sets, Strings } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
+import { Errors, isNull, Objs, Maps, Sets, Strings } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
+
+export class AssertionError extends Error {
+  public static isAssertionError(error: Error) {
+    if (isNull((error as AssertionError).isAssertionError)) {
+      return false;
+    }
+    return true;
+  }
+  
+  constructor(message: string) {
+    super(message);
+  }
+  
+  isAssertionError() { return true; }
+}
 
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
@@ -48,7 +63,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
       err = e;
     }
     if (err == undefined) {
-      throw Error('The runnable was expected to throw an Error, however it did NOT throw an error.');
+      throw new AssertionError('The runnable was expected to throw an Error, however it did NOT throw an error.');
     } else {
       let ex: Error = err as Error;
       if (ex.message != expected) {
@@ -135,11 +150,11 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
 
     this._count++;
     if (!Errors.hasName(expected)) {
-      throw new Error('' + message + "\n\tThe expected error doesn't have a name?");
+      throw new AssertionError('' + message + "\n\tThe expected error doesn't have a name?");
     }
     this._count++;
     if (!Errors.hasName(actual)) {
-      throw new Error('' + message + "\n\tThe actual error doesn't have a name?");
+      throw new AssertionError('' + message + "\n\tThe actual error doesn't have a name?");
     }
     this._count++;
     if (expected.name != actual.name) {
@@ -152,7 +167,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
     this._count++;
     if (!Errors.hasMessage(actual)) {
-      throw new Error('' + message + "\n\tThe actual error doesn't have a message?");
+      throw new AssertionError('' + message + "\n\tThe actual error doesn't have a message?");
     }
     this._count++;
     if (expected.message != actual.message) {
@@ -164,7 +179,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
       if (Errors.hasCause(actual)) {
         this.thrownIn(expected.cause, actual.cause, counter + 1, message);
       } else {
-        throw new Error('' + message + "\n\tThe expected error has a cause, however, the actual error does NOT!");
+        throw new AssertionError('' + message + "\n\tThe expected error has a cause, however, the actual error does NOT!");
       }
     }
   }
@@ -436,10 +451,10 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
           if (aMap.has(key)) {
             //they both have the key
           } else {
-            throw new Error(sMsg + "\n\t The expected Map has the following key, which is missing from the actual Map; \n\t\t'" + key + "'");
+            throw new AssertionError(sMsg + "\n\t The expected Map has the following key, which is missing from the actual Map; \n\t\t'" + key + "'");
           }
         } else {
-          throw new Error(sMsg + "\n\t The expected Map is missing the following key, which is present in the actual Map; \n\t\t'" + key + "'");
+          throw new AssertionError(sMsg + "\n\t The expected Map is missing the following key, which is present in the actual Map; \n\t\t'" + key + "'");
         }
         this.equals(eMap.get(key), aMap.get(key), sMsg + "\n\tThe value with the following key should match;\n\t\t '" + key + "'\n");
       }
@@ -457,9 +472,9 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
           console.log("This is a bug in EsNext why would a Map have a undefined key, someone please fix! ");
         } else {
           if (eMap === over) {
-            throw new Error(sMsg + "\n\tThe following keys are missing from the expected Map;\n\t\t" + [...keys] + "\n");
+            throw new AssertionError(sMsg + "\n\tThe following keys are missing from the expected Map;\n\t\t" + [...keys] + "\n");
           } else {
-            throw new Error(sMsg + "\n\tThe following keys are missing from the actual Map;\n\t\t" + [...keys] + "\n");
+            throw new AssertionError(sMsg + "\n\tThe following keys are missing from the actual Map;\n\t\t" + [...keys] + "\n");
           }
         }
       }
@@ -478,7 +493,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
       s = s + message + '\n';
     }
 
-    throw Error(s + 'The expected is; \n\t\'' + expected + '\'\n\n\tHowever the actual is;\n\t\'' +
+    throw new AssertionError(s + 'The expected is; \n\t\'' + expected + '\'\n\n\tHowever the actual is;\n\t\'' +
       actual + '\'');
   }
 

@@ -33,6 +33,7 @@ import {
   I_TestRunner,
   I_Trial
 } from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
+import { AssertionError } from "./assertions.mjs";
 import { isNull } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs"
 
 class Eval implements I_Eval {
@@ -124,13 +125,13 @@ export class Test implements I_Test {
     return this._ignored;
   }
 
-  run(assertionCtx: I_AssertionContext) {
+  run(assertionCtx: I_AssertionContext): void {
     if (isNull(this._testRunner)) {
       //legacy depreicated method
       this._acConsumer(assertionCtx);
+    } else {
+      this._testRunner.run(assertionCtx);
     }
-    this._testRunner.run(assertionCtx)
-
   }
 }
 
@@ -257,9 +258,17 @@ export class TestRunner implements I_TestRunner {
   }
 
 
+  /** 
+   * This has some screwy hack in it because the following code
+   * <pre><code>
+   * func(this._testInstance, assertionCtx);
+   * </code></pre>
+   * seems to always throw an exception, although it calls your code 
+   * and is debuggable from WebStorm ... hmmm
+   */
   run(assertionCtx: I_AssertionContext): void {
     const func = new Function("testInstance", "assertionCtx",
-        "testInstance." + this._testFunctionName + "(assertionCtx);");
+        " testInstance." + this._testFunctionName + "(assertionCtx); ");
     func(this._testInstance, assertionCtx);
     //let evalJavaScriptString = 'this._testInstance.' + this._testFunctionName + '(assertionCtx);';
     //this._eval.eval(evalJavaScriptString);

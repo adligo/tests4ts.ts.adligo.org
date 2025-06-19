@@ -173,7 +173,7 @@ abstract class AbstractTrial implements I_Trial {
 
   abstract getType(): TrialType;
 
-  run(assertionCtxFactory: I_AssertionContextFactory, testResultFactor: I_TestResultFactory): I_Runnable {
+  run(assertionCtxFactory: I_AssertionContextFactory, testResultFactory: I_TestResultFactory): I_Runnable {
     //out('In run of ' + this.getName());
     this.createTests();
     if (this.getTestCount() == 0) {
@@ -182,11 +182,12 @@ abstract class AbstractTrial implements I_Trial {
     let funs: Function[] = new Array(this._tests.length);
     for (var i = 0; i < this._tests.length; i++) {
       let t: I_Test = this._tests[i];
-      var caught: any;
+
       //out('Aggergating async function for  ' + t.getName());
       funs[i] = async () => {
         var failureErrorMessage: string = '';
         let ac: I_AssertionContext = assertionCtxFactory.newAssertionContext();
+        var caught;
         try {
           if (t.isIgnored()) {
             console.log('IGNORING Test ' + t.getName());
@@ -195,15 +196,20 @@ abstract class AbstractTrial implements I_Trial {
             //out('Running  ' + t.getName());
             //+ ' with ac ' + JSON.stringify(ac)
             console.log('Running Test ' + t.getName());
-            t.run(ac)
+            t.run(ac);
+            console.log('Completed Test ' + t.getName());
           }
         } catch (x: any) {
+          caught = x;
           failureErrorMessage = '\n\nTest ' + t.getName() + ' Failed\n'
           failureErrorMessage = this.appendErrorDetails(x, failureErrorMessage);
+          this._results.push(testResultFactory.newTestResultFailure(ac.getCount(), t, failureErrorMessage));
+          this._failures++;
         }
-        this._results.push(testResultFactor.newTestResultFailure(ac.getCount(), t, failureErrorMessage));
-        this._failures++;
-        return;
+        if (isNull(caught)) {
+          this._results.push(testResultFactory.newTestResult(ac.getCount(), t));
+        }
+       return;
       }
       funs[i]();
     }
