@@ -141,7 +141,7 @@ export class TestFactoryParams implements I_TestFactoryParams {
    */
   private _instancesWithTestMethods: any[];
   private _testNamePrefix: string = 'test';
-  private _testIgnoredSuffix: string = 'ignored';
+  private _testIgnoredSuffix: string = 'Ignored';
 
   constructor(testPrefix?: string, testIgnoredSuffix?: string, instancesWithTestMethods?: any[]) {
     if (instancesWithTestMethods != null) {
@@ -191,7 +191,7 @@ export class TestFactory implements I_TestFactory {
           //testX or textXIgnored
           if (key.includes(ignoredSuffix)) {
             //testXIgnored
-            let testName = key.substring(0, key.length - ignoredSuffix.length - 1);
+            let testName = key.substring(0, key.length - ignoredSuffix.length );
             if (testsToParams.has(testName)) {
               let tp: TestParams = testsToParams.get(testName) as TestParams;
               tp.withTestRunner(new TestRunner(inst, testName));

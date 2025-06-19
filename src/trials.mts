@@ -207,7 +207,13 @@ abstract class AbstractTrial implements I_Trial {
           this._failures++;
         }
         if (isNull(caught)) {
-          this._results.push(testResultFactory.newTestResult(ac.getCount(), t));
+          if (ac.getCount() == 0) {
+            failureErrorMessage = '\n\nTest ' + t.getName() + ' Failed\n'
+            failureErrorMessage = this.appendErrorDetails(new Error('No assertions were made!'), failureErrorMessage);
+            this._results.push(testResultFactory.newTestResultFailure(ac.getCount(), t, failureErrorMessage));
+          } else {
+            this._results.push(testResultFactory.newTestResult(ac.getCount(), t));
+          }
         }
        return;
       }
