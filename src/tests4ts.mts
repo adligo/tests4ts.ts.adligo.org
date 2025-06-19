@@ -148,7 +148,7 @@ export class TrialSuite {
     var ti = 0;
     var summaryMessage = '\n\n\n---------------------  Test Results -----------------------';
     this._trials.forEach(t => {
-      this._out('\t' + t.getName() + ' ' + this._name);
+      summaryMessage += '\n\t' + t.getName() + ' ' + this._name;
       ta += t.getAssertionCount();
       tf += t.getFailureCount();
       tt += t.getTestCount();

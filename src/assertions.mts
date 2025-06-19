@@ -39,6 +39,7 @@ export class AssertionError extends Error {
     }
     return true;
   }
+  readonly name: string = "AssertionError";
   
   constructor(message: string) {
     super(message);
@@ -91,14 +92,14 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
   isFalse(check: boolean, message?: string) {
     this._count++;
     if (check) {
-      throw Error(message);
+      throw new AssertionError(message);
     }
   }
 
   isTrue(check: boolean, message?: string) {
     this._count++;
     if (!check) {
-      throw Error(message);
+      throw new AssertionError(message);
     }
   }
 
@@ -110,7 +111,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
   same(expected: I_String | string | any, actual: I_String | string | any, message?: string): void {
     this._count++;
     if (!(expected === actual)) {
-      this.stringMatchError(expected, actual, message);
+      this.stringMatchError(this.toString(expected), this.toString(actual), message);
     }
   }
 
@@ -292,10 +293,10 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
           if (aMap.has(key)) {
             //they both have the key
           } else {
-            throw new Error(sMsg + "\n\t The expected Map has the following key, which is missing from the actual Map; \n\t\t'" + key + "'");
+            throw new AssertionError(sMsg + "\n\t The expected Map has the following key, which is missing from the actual Map; \n\t\t'" + key + "'");
           }
         } else {
-          throw new Error(sMsg + "\n\t The expected Map is missing the following key, which is present in the actual Map; \n\t\t'" + key + "'");
+          throw new AssertionError(sMsg + "\n\t The expected Map is missing the following key, which is present in the actual Map; \n\t\t'" + key + "'");
         }
         this.equals(eMap.get(key), aMap.get(key), sMsg + "\n\tThe value with the following key should match;\n\t\t '" + key + "'\n");
       }
@@ -313,9 +314,9 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
           console.log("This is a bug in EsNext why would a Map have a undefined key, someone please fix! ");
         } else {
           if (eMap === over) {
-            throw new Error(sMsg + "\n\tThe following keys are missing from the expected Map;\n\t\t" + [...keys] + "\n");
+            throw new AssertionError(sMsg + "\n\tThe following keys are missing from the expected Map;\n\t\t" + [...keys] + "\n");
           } else {
-            throw new Error(sMsg + "\n\tThe following keys are missing from the actual Map;\n\t\t" + [...keys] + "\n");
+            throw new AssertionError(sMsg + "\n\tThe following keys are missing from the actual Map;\n\t\t" + [...keys] + "\n");
           }
         }
       }
