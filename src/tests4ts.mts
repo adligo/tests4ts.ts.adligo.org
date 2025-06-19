@@ -61,69 +61,6 @@ export class DefaultTestResultFactory implements I_TestResultFactory {
 
 }
 
-export class TestParams {
-  public static of(name: string) {
-    let tp = new TestParams();
-    tp._name = name;
-    return tp;
-  }
-
-  
-  private _name: string;
-  private _ignore: boolean = false;
-  
-  public ignore(): TestParams {
-    this._ignore = true;
-    return this;
-  }
-  
-  public getName() {
-    return this._name;
-  }
-  public isIgnored() {
-    return this._ignore;
-  }
-}
-
-/**
- * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
- * Note a test is really a indivual Function in this implementation,
- * hoistorically in the Java tests4j implementation it's a method.
- */
-export class Test implements I_Test {
-  private _acConsumer: I_AssertionContextConsumer;
-  private _name: string;
-  private _ignored: boolean;
-
-  constructor(testNameOrP: string | TestParams, assertionContextConsumer: I_AssertionContextConsumer) {
-    if (testNameOrP instanceof TestParams) {
-      let params = testNameOrP as TestParams;
-      this._name = params.getName();
-      this._ignored = params.isIgnored();
-    } else {
-      this._name = testNameOrP as string;
-    }
-
-    this._acConsumer = assertionContextConsumer;
-  }
-
-  getName() {
-    return this._name;
-  }
-
-  ignore(): Test {
-    this._ignored = true;
-    return this;
-  }
-
-  isIgnored() {
-    return this._ignored;
-  }
-
-  run(assertionCtx: I_AssertionContext) {
-    this._acConsumer(assertionCtx);
-  }
-}
 
 export class TrialSuiteParams implements  I_Named {
   public static of(trialSuiteName: string): TrialSuiteParams {

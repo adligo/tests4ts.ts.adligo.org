@@ -17,11 +17,14 @@
  * limitations under the License.
  */
 import {
-  ComparisionNodeType, ComparisonNodeInfoType,
+  ComparisionNodeType, ComparisonNodeInfoType, TypeName
+} from
+      '@ts.adligo.org/i_tests4ts_types/dist/i_tests4ts_types.mjs';
+import {
   I_AssertionContext, I_AssertionContextConsumer, I_AssertionContextResult,
   I_ComparisionNode, I_ComparisionArrayInfo, I_ComparisionBaseInfo,
   I_ComparisionCollectionSizeInfo, I_ComparisionMapValueInfo, I_ComparisionSetInfo, I_ComparisionTypeInfo,
-  I_EquatableString, I_Runnable, TypeName
+  I_EquatableString, I_Runnable
 } from
   '@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs';
 

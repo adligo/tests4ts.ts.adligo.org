@@ -17,28 +17,55 @@
  * limitations under the License.
  */
 
-import {
-  I_AssertionContext, I_AssertionContextConsumer, I_AssertionContextFactory,
-  I_FileConverter, I_Runnable, I_Test,
-  I_TestResult, I_TestResultFactory, I_Trial, TrialType
+import {TrialType} from "@ts.adligo.org/i_tests4ts_types/dist/i_tests4ts_types.mjs";
+import { I_AssertionContext, I_AssertionContextFactory, I_Runnable, I_Test,
+  I_TestFactory, I_TestFactoryParams, I_TestParams, I_TestResult, I_TestResultFactory,
+  I_Trial, I_TrialParams
 } from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
-import { AssertionContext } from "./assertions.mjs";
-import { TrialSuite } from "./tests4ts.mjs";
-import { I_Named } from "@ts.adligo.org/i_strings/dist/i_strings.mjs";
+import { TestFactory, TestFactoryParams } from "./tests.mjs";
+import {TrialSuite} from "./tests4ts.mjs";
+import {I_Named} from "@ts.adligo.org/i_strings/dist/i_strings.mjs";
 
-import { Errors } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
+import {Errors, isNull} from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
 
-export class TrialParams implements I_Named {
+export class TrialParams implements I_TrialParams {
   public static of(trialName: string): TrialParams {
     return new TrialParams(trialName);
   }
+  public static isI_TrialParams(o: any ): boolean {
+    if (isNull(o)) {
+      return false;
+    } else if (isNull((o as I_TrialParams).getName)) {
+      return false;
+    } else if (isNull((o as I_TrialParams).getTrialName)) {
+      return false;
+    } else if (isNull((o as I_TrialParams).getTestFactoryParams)) {
+      return false;
+    } else if (isNull((o as I_TrialParams).getTestFactory)) {
+      return false;
+    }
+    return true;
+  }
+
   _trialName: string;
+  _testFactory: I_TestFactory;
+  _testFactoryParams: I_TestFactoryParams;
 
   constructor(trialName: string) {
     this._trialName = trialName;
   }
 
-  public getName(): string {
+
+    getTestFactoryParams(): I_TestFactoryParams {
+        return this._testFactoryParams;
+    }
+    getTestFactory(): I_TestFactory {
+      return this._testFactory;
+  }
+  getTrialName(): string {
+    return this._trialName;
+  }
+  getName(): string {
     return this._trialName;
   }
 }
@@ -57,35 +84,62 @@ abstract class AbstractTrial implements I_Trial {
   private _name: string;
   private _ignored: number = 0;
   private _tests: I_Test[];
+  private _testFactory: I_TestFactory;
+  private _testFactoryParams: I_TestFactoryParams;
   private _testsMap: Map<string, I_Test>;
   private _results: I_TestResult[] = [];
   private _failures: number = 0;
 
-  constructor(trialNameOrP: string | TrialParams, tests: I_Test[]) {
-    if (trialNameOrP instanceof TrialSuite) {
-      let params = trialNameOrP as TrialParams;
-      this._name = params.getName();
+  /**
+   *
+   * @param trialNameOrP
+   * @param tests @depricated, tests will be created using the I_TestFactory passed through
+   *    the TrialParams
+   */
+  constructor(trialNameOrP: string | I_TrialParams, tests?: I_Test[]) {
+    if (TrialParams.isI_TrialParams(trialNameOrP)) {
+      let params = trialNameOrP as I_TrialParams;
+      this._name = params.getTrialName();
+      this._testFactory = params.getTestFactory();
+      this._testFactoryParams = params.getTestFactoryParams();
     } else {
       this._name = trialNameOrP as string;
     }
-    this._tests = tests;
-    this._testsMap = new Map();
-    for (var i = 0; i < this._tests.length; i++) {
-      let test = tests[i];
-      let testName = test.getName();
-      if (testName == undefined || testName.trim() == '') {
-        throw Error(AbstractTrial.A_TEST_WITH_AN_EMPTY_NAME_HAS_BEEN_SENT);
+    if (this._testFactory == null || this._testFactory == undefined) {
+      this._testFactory = new TestFactory();
+    }
+    if (this._testFactoryParams == null || this._testFactoryParams == undefined) {
+      this._testFactoryParams = new TestFactoryParams();
+    }
+
+    if (tests != null && tests != undefined) {
+      console.log(new Error(
+          "Passing tests as the tests parameter to the AbstractTrial constructor is depricated!").stack);
+      this._tests = tests;
+      this._testsMap = new Map();
+      for (var i = 0; i < this._tests.length; i++) {
+        let test = tests[i];
+        let testName = test.getName();
+        if (testName == undefined || testName.trim() == '') {
+          throw Error(AbstractTrial.A_TEST_WITH_AN_EMPTY_NAME_HAS_BEEN_SENT);
+        }
+        if (this._testsMap.has(testName)) {
+          throw Error(AbstractTrial.A_TEST_WITH_THE_FOLLOWING_DUPLICATE_NAME_HAS_BEEN_SENT + test.getName());
+        }
+        if (testName.includes('.')) {
+          throw Error(AbstractTrial.TEST_NAMES_SHOULD_NOT_CONTAIN_DOTS + '\n  ' + test.getName());
+        }
+        this._testsMap.set(test.getName(), test);
       }
-      if (this._testsMap.has(testName)) {
-        throw Error(AbstractTrial.A_TEST_WITH_THE_FOLLOWING_DUPLICATE_NAME_HAS_BEEN_SENT + test.getName());
-      }
-      if (testName.includes('.')) {
-        throw Error(AbstractTrial.TEST_NAMES_SHOULD_NOT_CONTAIN_DOTS + '\n  ' +  test.getName());
-      }
-      this._testsMap.set(test.getName(), test);
     }
   }
 
+  createTests(): I_Trial {
+    if (this._tests == undefined || this._tests == null) {
+      this._tests = this._testFactory.getTests(this._testFactoryParams, this);
+    }
+    return this;
+  }
   getAssertionCount() {
     return this._results.map(r => r.getAssertionCount()).reduce((sum, current) => sum + current, 0);
   }
@@ -103,6 +157,9 @@ abstract class AbstractTrial implements I_Trial {
   }
 
   getTestCount() {
+    if (isNull(this._tests)) {
+      return 0;
+    }
     return this._tests.length;
   }
 
@@ -118,6 +175,10 @@ abstract class AbstractTrial implements I_Trial {
 
   run(assertionCtxFactory: I_AssertionContextFactory, testResultFactor: I_TestResultFactory): I_Runnable {
     //out('In run of ' + this.getName());
+    this.createTests();
+    if (this.getTestCount() == 0) {
+      throw Error(this._name + " doesn't have any tests?!!!");
+    }
     let funs: Function[] = new Array(this._tests.length);
     for (var i = 0; i < this._tests.length; i++) {
       let t: I_Test = this._tests[i];
@@ -175,6 +236,19 @@ abstract class AbstractTrial implements I_Trial {
 
 export class ApiTrial extends AbstractTrial implements I_Trial {
 
+  /**
+   *
+   * @param trialNameOrP TODO this should be a SourceFileTrialParams
+   * @param tests @depricated don't use this any more tests4ts will find your tests
+   *   through a form of reflection using Object.getKeys() looking for members that start with 'test'
+   * and don't end with 'Ignored'
+   */
+  constructor(trialNameOrP: string | I_TrialParams, tests?: I_Test[]) {
+    super(trialNameOrP, tests);
+  }
+  
+  createTests(): I_Trial { super.createTests(); return this; }
+
   getAssertionCount(): number { return super.getAssertionCount(); }
 
   getFailureCount(): number { return super.getFailureCount(); }
@@ -196,14 +270,13 @@ export class ApiTrial extends AbstractTrial implements I_Trial {
   }
 }
 
-export class SourceFileTrialParams implements I_Named {
-  public static of(trialName: string): TrialParams {
-    return new TrialParams(trialName);
+export class SourceFileTrialParams extends TrialParams /* implements I_TrialParams */ {
+  public static of(trialName: string): SourceFileTrialParams {
+    return new SourceFileTrialParams(trialName);
   }
-  _trialName: string;
 
   constructor(trialName: string) {
-    this._trialName = trialName;
+    super(trialName);
   }
 
   public getName(): string {
@@ -213,10 +286,18 @@ export class SourceFileTrialParams implements I_Named {
 
 export class SourceFileTrial extends AbstractTrial implements I_Trial {
 
-  constructor(trialNameOrP: string | SourceFileTrialParams, tests: I_Test[]) {
+  /**
+   *
+   * @param trialNameOrP TODO this should be a SourceFileTrialParams
+   * @param tests @depricated don't use this any more tests4ts will find your tests
+   *   through a form of reflection using Object.getKeys() looking for members that start with 'test'
+   * and don't end with 'Ignored'
+   */
+  constructor(trialNameOrP: string | I_TrialParams, tests?: I_Test[]) {
     super(trialNameOrP, tests);
   }
 
+  createTests(): I_Trial { super.createTests(); return this; }
 
   getAssertionCount(): number { return super.getAssertionCount(); }
 

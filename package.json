@@ -12,6 +12,8 @@
     "singleTestRunner.mts": "./src/singleTestRunner.mts",
     "singleTrialRunner.mjs": "./dist/singleTrialRunner.mjs",
     "singleTrialRunner.mts": "./src/singleTrialRunner.mts",
+    "tests.mjs": "./dist/tests.mjs",
+    "tests.mts": "./src/tests.mts",
     "tests4ts.mjs": "./dist/tests4ts.mjs",
     "tests4ts.mts": "./src/tests4ts.mts",
     "trials.mjs": "./dist/trials.mjs",
