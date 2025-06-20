@@ -197,7 +197,7 @@ abstract class AbstractTrial implements I_Trial {
             //+ ' with ac ' + JSON.stringify(ac)
             console.log('Running Test ' + t.getName());
             t.run(ac);
-            console.log('Completed Test ' + t.getName());
+            console.log('Completed Test ' + t.getName() + ' with ' + ac.getCount() + ' assertions.');
           }
         } catch (x: any) {
           caught = x;
