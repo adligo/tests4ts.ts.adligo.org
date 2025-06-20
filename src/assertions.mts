@@ -766,28 +766,27 @@ export class FastEqualsRecursiveChecker {
    */
   equalsFastIn(expected: any, actual: any, first: boolean, counter: ComparisionNodeMutant): boolean {
     // undefined, null and NaN checks
-    if (!first) {
-      if (typeof expected === 'undefined' && expected == undefined) {
-        counter.increment();
-        if (typeof actual === 'undefined' && actual == undefined) {
-          return true;
-        } else {
-          return false;
-        }
-      } else if (typeof expected === 'object' && expected == null) {
-        counter.increment();
-        if (typeof actual === 'object' && actual == null) {
-          return true;
-        } else {
-          return false;
-        }
-      } else if (typeof expected === 'number' && isNaN(expected)) {
-        counter.increment();
-        if (typeof actual === 'number' && isNaN(actual)) {
-          return true;
-        } else {
-          return false;
-        }
+
+    if (expected === undefined) {
+      counter.increment();
+      if (actual === undefined) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (expected === null) {
+      counter.increment();
+      if (actual === null) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (typeof expected === 'number' && isNaN(expected)) {
+      counter.increment();
+      if (typeof actual === 'number' && isNaN(actual)) {
+        return true;
+      } else {
+        return false;
       }
     }
 
@@ -798,6 +797,10 @@ export class FastEqualsRecursiveChecker {
         let aArray = actual as Array<any>;
         counter.increment();
         if (eArray.length == aArray.length) {
+          if (eArray.length == 0) {
+            counter.setInfo(new ComparisionCollectionSizeInfo(eArray.length, aArray.length));
+            return true;
+          }
           let len = eArray.length;
           for (let i = 0; i < len; i++) {
             let next = new ComparisionNodeMutant(eArray[i], aArray[i]);
@@ -807,7 +810,7 @@ export class FastEqualsRecursiveChecker {
             }
           }
         } else {
-          counter.setInfo(new ComparisionCollectionSizeInfo(eArray.length, aArray.length))
+          counter.setInfo(new ComparisionCollectionSizeInfo(eArray.length, aArray.length));
           return false;
         }
       } else {
@@ -882,8 +885,17 @@ export class FastEqualsRecursiveChecker {
       if (expected === actual) {
         return true;
       } else if (expected == actual) {
-        return true;
+        if (typeof expected === typeof actual) {
+          return true;
+        }
       }
+      /**
+      else if (typeof expected === 'object') {
+        if (Objs.hasEquals()) {
+
+        }
+      }
+          */
       return false;
     }
   }
