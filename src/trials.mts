@@ -17,31 +17,32 @@
  * limitations under the License.
  */
 
-import {TrialType} from "@ts.adligo.org/i_tests4ts_types/dist/i_tests4ts_types.mjs";
-import { I_AssertionContext, I_AssertionContextFactory, I_Runnable, I_Test,
+import { TrialType } from "@ts.adligo.org/i_tests4ts_types/dist/i_tests4ts_types.mjs";
+import {
+  I_AssertionContext, I_AssertionContextFactory, I_Runnable, I_Test,
   I_TestFactory, I_TestFactoryParams, I_TestParams, I_TestResult, I_TestResultFactory,
   I_Trial, I_TrialParams
 } from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
 import { TestFactory, TestFactoryParams } from "./tests.mjs";
-import {TrialSuite} from "./tests4ts.mjs";
-import {I_Named} from "@ts.adligo.org/i_strings/dist/i_strings.mjs";
+import { TrialSuite } from "./tests4ts.mjs";
+import { I_Named } from "@ts.adligo.org/i_strings/dist/i_strings.mjs";
 
-import {Errors, isNull} from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
+import { Errors, isNil } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
 
 export class TrialParams implements I_TrialParams {
   public static of(trialName: string): TrialParams {
     return new TrialParams(trialName);
   }
-  public static isI_TrialParams(o: any ): boolean {
-    if (isNull(o)) {
+  public static isI_TrialParams(o: any): boolean {
+    if (isNil(o)) {
       return false;
-    } else if (isNull((o as I_TrialParams).getName)) {
+    } else if (isNil((o as I_TrialParams).getName)) {
       return false;
-    } else if (isNull((o as I_TrialParams).getTrialName)) {
+    } else if (isNil((o as I_TrialParams).getTrialName)) {
       return false;
-    } else if (isNull((o as I_TrialParams).getTestFactoryParams)) {
+    } else if (isNil((o as I_TrialParams).getTestFactoryParams)) {
       return false;
-    } else if (isNull((o as I_TrialParams).getTestFactory)) {
+    } else if (isNil((o as I_TrialParams).getTestFactory)) {
       return false;
     }
     return true;
@@ -56,17 +57,27 @@ export class TrialParams implements I_TrialParams {
   }
 
 
-    getTestFactoryParams(): I_TestFactoryParams {
-        return this._testFactoryParams;
-    }
-    getTestFactory(): I_TestFactory {
-      return this._testFactory;
+  getTestFactoryParams(): I_TestFactoryParams {
+    return this._testFactoryParams;
+  }
+  getTestFactory(): I_TestFactory {
+    return this._testFactory;
   }
   getTrialName(): string {
     return this._trialName;
   }
   getName(): string {
     return this._trialName;
+  }
+
+  withTestFactory(testFactory : I_TestFactory): TrialParams {
+    this._testFactory = testFactory;
+    return this;
+  }
+
+  withTestFactoryParams(testFactoryParams : I_TestFactoryParams): TrialParams {
+    this._testFactoryParams = testFactoryParams;
+    return this;
   }
 }
 
@@ -75,14 +86,19 @@ export class TrialParams implements I_TrialParams {
 /**
  * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
  */
-abstract class AbstractTrial implements I_Trial {
+export abstract class AbstractTrial implements I_Trial {
   public static readonly A_TEST_WITH_AN_EMPTY_NAME_HAS_BEEN_SENT = "A test with an empty or undefined name has been sent ???";
   public static readonly A_TEST_WITH_THE_FOLLOWING_DUPLICATE_NAME_HAS_BEEN_SENT = "A test with the following duplicate name has been sent ??? ";
-  public static readonly TEST_NAMES_SHOULD_NOT_CONTAIN_DOTS = 
+  public static readonly TEST_NAMES_SHOULD_NOT_CONTAIN_DOTS =
     "The following test name is fully qualified with dots to separate name-space components, please remove these as they are implied;";
 
   private _name: string;
   private _ignored: number = 0;
+  /**
+   * default to two spaces
+   * @private
+   */
+  private _tab: string = '  ';
   private _tests: I_Test[];
   private _testFactory: I_TestFactory;
   private _testFactoryParams: I_TestFactoryParams;
@@ -114,7 +130,7 @@ abstract class AbstractTrial implements I_Trial {
 
     if (tests != null && tests != undefined) {
       console.log(new Error(
-          "Passing tests as the tests parameter to the AbstractTrial constructor is depricated!").stack);
+        "Passing tests as the tests parameter to the AbstractTrial constructor is depricated!").stack);
       this._tests = tests;
       this._testsMap = new Map();
       for (var i = 0; i < this._tests.length; i++) {
@@ -157,7 +173,7 @@ abstract class AbstractTrial implements I_Trial {
   }
 
   getTestCount() {
-    if (isNull(this._tests)) {
+    if (isNil(this._tests)) {
       return 0;
     }
     return this._tests.length;
@@ -202,20 +218,20 @@ abstract class AbstractTrial implements I_Trial {
         } catch (x: any) {
           caught = x;
           failureErrorMessage = '\n\nTest ' + t.getName() + ' Failed\n'
-          failureErrorMessage = this.appendErrorDetails(x, failureErrorMessage);
+          failureErrorMessage = failureErrorMessage + this.getErrorDetails(x);
           this._results.push(testResultFactory.newTestResultFailure(ac.getCount(), t, failureErrorMessage));
           this._failures++;
         }
-        if (isNull(caught)) {
+        if (isNil(caught)) {
           if (ac.getCount() == 0 && !t.isIgnored()) {
             failureErrorMessage = '\n\nTest ' + t.getName() + ' Failed\n'
-            failureErrorMessage = this.appendErrorDetails(new Error('No assertions were made!'), failureErrorMessage);
+            failureErrorMessage = failureErrorMessage + this.getErrorDetails(new Error('No assertions were made!'));
             this._results.push(testResultFactory.newTestResultFailure(ac.getCount(), t, failureErrorMessage));
           } else {
             this._results.push(testResultFactory.newTestResult(ac.getCount(), t));
           }
         }
-       return;
+        return;
       }
       funs[i]();
     }
@@ -224,25 +240,39 @@ abstract class AbstractTrial implements I_Trial {
     };
   }
 
-  private appendErrorDetails(caught: any, failureErrorMessage: string) {
+  /**
+   *
+   * @param caught
+   * @param failureErrorMessage
+   */
+  getErrorDetails(caught: any, tab?: string) {
+    if (isNil(tab)) {
+      tab = '';
+    }
+    var r = '';
     if (caught != undefined) {
-      if (Errors.hasStack(caught)) {
-        //the stack has the error message
-        failureErrorMessage += caught.stack;
-      } else if (Errors.hasMessage(caught)) {
-        failureErrorMessage += caught.message + '\n';
-      } else {
-        failureErrorMessage += +caught + '\n';
+      if ( !Errors.hasStack(caught)) {
+        if (Errors.hasMessage(caught)) {
+          r = tab + caught.message + "\n";
+        }
       }
+
+      if (Errors.hasStack(caught)) {
+        let lines = caught.stack.split("\n");
+        //the stack has the error message
+        for (let line of lines) {
+          r = r + tab + line + "\n";
+        }
+      } else
 
       var cause = caught.cause;
       while (cause != undefined) {
-        failureErrorMessage += "\n\n Cause: " + cause.name;
-        failureErrorMessage = this.appendErrorDetails(cause, failureErrorMessage);
+        r = r + tab +  "Cause: " + cause.name + "\n";
+        r = r + this.getErrorDetails(cause, tab + this._tab);
         cause = caught.cause;
       }
     }
-    return failureErrorMessage;
+    return r;
   }
 }
 
@@ -258,7 +288,7 @@ export class ApiTrial extends AbstractTrial implements I_Trial {
   constructor(trialNameOrP: string | I_TrialParams, tests?: I_Test[]) {
     super(trialNameOrP, tests);
   }
-  
+
   createTests(): I_Trial { super.createTests(); return this; }
 
   getAssertionCount(): number { return super.getAssertionCount(); }

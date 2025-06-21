@@ -216,7 +216,9 @@ export class TestFactory implements I_TestFactory {
     return result;
   }
 
-
+  getTestsDefault(trial: I_Trial): I_Test[] {
+    return this.getTests(new TestFactoryParams(), trial);
+  }
 }
 
 export class TestRunner implements I_TestRunner {
@@ -272,5 +274,32 @@ export class TestRunner implements I_TestRunner {
     func(this._testInstance, assertionCtx);
     //let evalJavaScriptString = 'this._testInstance.' + this._testFunctionName + '(assertionCtx);';
     //this._eval.eval(evalJavaScriptString);
+  }
+}
+
+/**
+ * This class is for the singleTestRunner.mts
+ * to trick the code into only having a single test
+ */
+export class TestFactoryDelegate implements  I_TestFactory {
+  _trial: I_Trial;
+  _testName: string;
+  _testFactory: I_TestFactory = new TestFactory();
+
+  constructor(trial: I_Trial, testName: string) {
+    this._trial = trial;
+    this._testName = testName;
+  }
+
+  getTests(params: I_TestFactoryParams, trial: I_Trial): I_Test[] {
+      let tests: I_Test[] = this._testFactory.getTests(params, this._trial);
+      let r: I_Test[] = [];
+      for (const t of tests) {
+        let test: I_Test = t as I_Test;
+        if (test.getName() === this._testName) {
+          r.push(test);
+        }
+      }
+      return r;
   }
 }

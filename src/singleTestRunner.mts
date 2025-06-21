@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 import { I_Proc, ProcStub } from './proc.mjs';
-import { I_Test, I_Trial } from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
+import { I_Test, I_TestFactory, I_Trial } from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
 import { TrialSuite } from './tests4ts.mjs';
-import { ApiTrial } from './trials.mjs';
+import { ApiTrial, TrialParams } from './trials.mjs';
+import {TestFactoryDelegate} from "./tests.mjs";
 
 export class SingleTestRunner {
   public static readonly THE_FOLLOWING_API_TRIAL_DOT_TEST = "The following ApiTrial.Test name needs a dot?";
@@ -77,5 +78,6 @@ export class SingleTestRunner {
 }
 
 export function runTest(trial: I_Trial, testName: string): void {
-  new TrialSuite(trial.getName(), [new ApiTrial(trial.getName(), [trial.getTest(testName)])]).run().printTextReport();
+  let trialDelegate = new ApiTrial(new TrialParams(trial.getName()).withTestFactory(new TestFactoryDelegate(trial, testName)));
+  new TrialSuite(trial.getName(), [trialDelegate]).run().printTextReport();
 }
