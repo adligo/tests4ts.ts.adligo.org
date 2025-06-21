@@ -64,6 +64,7 @@ export class FastEqualsRecursiveChecker {
             if (actual === undefined) {
                 return true;
             } else {
+                counter.addChildInfo(new ComparisionTypeInfo(TypeName.Undefined, getTypeName(actual)));
                 return false;
             }
         } else if (expected === null) {
@@ -71,6 +72,7 @@ export class FastEqualsRecursiveChecker {
             if (actual === null) {
                 return true;
             } else {
+                counter.addChildInfo(new ComparisionTypeInfo(TypeName.Null, getTypeName(actual)));
                 return false;
             }
         } else if (typeof expected === 'number' && isNaN(expected)) {
@@ -78,6 +80,7 @@ export class FastEqualsRecursiveChecker {
             if (typeof actual === 'number' && isNaN(actual)) {
                 return true;
             } else {
+                counter.addChildInfo(new ComparisionTypeInfo(TypeName.NaN, getTypeName(actual)));
                 return false;
             }
         }
@@ -149,10 +152,10 @@ export class FastEqualsRecursiveChecker {
                 let aMap = actual as Map<any, any>;
                 counter.increment();
                 if (eMap.size == aMap.size) {
-                    for (const [key, value] of Object.entries(eMap)) {
+                    for (const [key, value] of eMap) {
                         if (aMap.has(key)) {
                             let actualValue = aMap.get(key);
-                            if (this.equalsFastIn(value, actual, false, counter)) {
+                            if (this.equalsFastIn(value, actualValue, false, counter)) {
                                 // they matched
                             } else {
                                 counter.addChildInfo(new ComparisionMapInfo(key, value, actualValue));
@@ -163,10 +166,12 @@ export class FastEqualsRecursiveChecker {
                         } else {
                             //the actual map doesn't have the key
                             counter.addChildInfo(new ComparisionMapInfo(key, value, null));
+                            counter.addChildInfo(new ComparisionCollectionSizeInfo(eMap.size, aMap.size));
+                            counter.addChildInfo(new ComparisionTypeInfo(TypeName.Map, getTypeName(actual)));
                             return false;
                         }
                     }
-                    for (const [aKey, aValue] of Object.entries(aMap)) {
+                    for (const [aKey, aValue] of aMap) {
                         counter.increment();
                         if (eMap.has(aKey)) {
                             // already checked
@@ -179,9 +184,12 @@ export class FastEqualsRecursiveChecker {
                     }
                     return true;
                 } else {
+                    counter.addChildInfo(new ComparisionCollectionSizeInfo(eMap.size, aMap.size));
+                    counter.addChildInfo(new ComparisionTypeInfo(TypeName.Map, getTypeName(actual)));
                     return false;
                 }
             } else {
+                counter.addChildInfo(new ComparisionTypeInfo(TypeName.Map, getTypeName(actual)));
                 return false;
             }
         } else if (Objs.isEquatable(expected)) {

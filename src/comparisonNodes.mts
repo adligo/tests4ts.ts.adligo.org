@@ -27,6 +27,7 @@ import {
         '@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs';
 
 import { Maps, Sets } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
+import {type} from "node:os";
 
 
 export class ComparisionNodeMutant implements I_ComparisionNode {
@@ -147,7 +148,7 @@ export class ComparisionMapInfo implements I_ComparisionMapValueInfo {
     }
 
     getKey() {
-        this._key;
+        return this._key;
     }
     getInfoType(): ComparisonNodeInfoType {
         return ComparisonNodeInfoType.MapValue;
@@ -207,10 +208,17 @@ export function getTypeName(o: any): TypeName {
     switch (t) {
         case "boolean": return TypeName.Boolean;
         case "string": return TypeName.String;
-        case "number": return TypeName.Number;
         case "bigint": return TypeName.Number;
     }
-    if (Array.isArray(o)) {
+    if (typeof o === "undefined") {
+        return TypeName.Undefined;
+    } else if (o === null) {
+        return TypeName.Null;
+    } else if (typeof o === "number") {
+        return TypeName.Number;
+    } else if (Number.isNaN(o)) {
+        return TypeName.NaN;
+    } else if (Array.isArray(o)) {
         return TypeName.Array;
     } else if (Sets.isSet(o)) {
         return TypeName.Set;

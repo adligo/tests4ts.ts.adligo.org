@@ -25,7 +25,7 @@
 import {
   I_AssertionContext,
   I_AssertionContextConsumer,
-  I_Eval,
+  I_FunctionFactory,
   I_Test,
   I_TestFactory,
   I_TestFactoryParams,
@@ -34,11 +34,11 @@ import {
   I_Trial
 } from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
 import { AssertionError } from "./assertions.mjs";
-import { isNull } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs"
+import { isNil } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs"
 
-class Eval implements I_Eval {
-  eval(javaScript: string): any {
-    return eval(javaScript);
+export class FunctionFactory implements I_FunctionFactory {
+  newFun(...params: string[]): Function {
+    return new Function(...params);
   }
 }
 
@@ -50,13 +50,13 @@ export class TestParams implements I_TestParams {
   }
 
   public static isI_TestParams(o: any) {
-    if (isNull(o)) {
+    if (isNil(o)) {
       return false;
-    } else if (isNull((o as I_TestParams).getName)) {
+    } else if (isNil((o as I_TestParams).getName)) {
       return false;
-    } else if (isNull((o as I_TestParams).getTestRunner)) {
+    } else if (isNil((o as I_TestParams).getTestRunner)) {
       return false;
-    } else if (isNull((o as I_TestParams).isIgnored)) {
+    } else if (isNil((o as I_TestParams).isIgnored)) {
       return false;
     }
     return true;
@@ -126,7 +126,7 @@ export class Test implements I_Test {
   }
 
   run(assertionCtx: I_AssertionContext): void {
-    if (isNull(this._testRunner)) {
+    if (isNil(this._testRunner)) {
       //legacy depreicated method
       this._acConsumer(assertionCtx);
     } else {
@@ -156,7 +156,7 @@ export class TestFactoryParams implements I_TestFactoryParams {
   }
 
   getInstancesWithTestMethods(): any[] {
-    if (isNull(this._instancesWithTestMethods)) {
+    if (isNil(this._instancesWithTestMethods)) {
       return [];
     }
     return this._instancesWithTestMethods;
@@ -225,33 +225,34 @@ export class TestRunner implements I_TestRunner {
   static throwConstructorError(testInstance: any, testFunctionName: string, cause?: Error) {
     let error = new Error('Unable to find the following testMethod on the testInstance; ' +
         JSON.stringify(testInstance) + '\n\t testMethod: ' + testFunctionName)
-    if (isNull(cause)) {
+    if (isNil(cause)) {
       throw error;
     }
     error.cause = cause;
     throw error;
   }
-  _eval: I_Eval;
+  _functionFactory: I_FunctionFactory;
   _testInstance: any;
   _testFunctionName: string;
 
-  constructor(testInstance: any, testFunctionName: any, theEval?: I_Eval) {
-    if (theEval != null && theEval != undefined) {
-      this._eval = theEval;
+  constructor(testInstance: any, testFunctionName: any, theFunctionFactory?: I_FunctionFactory) {
+    if (isNil(theFunctionFactory)) {
+      this._functionFactory = new FunctionFactory();
     } else {
-      this._eval = new Eval();
+      this._functionFactory = theFunctionFactory;
     }
     this._testInstance = testInstance;
     this._testFunctionName = testFunctionName;
-    if (isNull(testInstance)) {
+    if (isNil(testInstance)) {
       throw new Error('TestInstance must be present (not null or undefined).');
     }
     const ti = testInstance;
     let evalJavaScriptString = 'console.log(JSON.stringify(ti)); ';
     //let evalJavaScriptString = 'this._testInstance.' + this._testFunctionName + ' != undefined';
-    const func = new Function("testInstance", "testInstance." + testFunctionName + " == undefined");
+    const func = this._functionFactory.newFun("testInstance", "return testInstance." + testFunctionName + " == undefined;");
     try {
-      if (func(testInstance)) {
+      let result: boolean = func(testInstance);
+      if (result) {
         TestRunner.throwConstructorError(testInstance, testFunctionName);
       }
     } catch (e) {
@@ -269,7 +270,7 @@ export class TestRunner implements I_TestRunner {
    * and is debuggable from WebStorm ... hmmm
    */
   run(assertionCtx: I_AssertionContext): void {
-    const func = new Function("testInstance", "assertionCtx",
+    const func = this._functionFactory.newFun("testInstance", "assertionCtx",
         " testInstance." + this._testFunctionName + "(assertionCtx); ");
     func(this._testInstance, assertionCtx);
     //let evalJavaScriptString = 'this._testInstance.' + this._testFunctionName + '(assertionCtx);';
