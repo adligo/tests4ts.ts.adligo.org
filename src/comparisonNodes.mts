@@ -214,13 +214,13 @@ export function getTypeName(o: any): TypeName {
         return TypeName.Undefined;
     } else if (o === null) {
         return TypeName.Null;
-    } else if (typeof o === "number") {
-        return TypeName.Number;
     } else if (Number.isNaN(o)) {
         return TypeName.NaN;
+    } else if (typeof o === "number") {
+        return TypeName.Number;
     } else if (Array.isArray(o)) {
         return TypeName.Array;
-    } else if (Sets.isSet(o)) {
+    } else if (Sets.isASet(o)) {
         return TypeName.Set;
     } else if (Maps.isMap(o)) {
         return TypeName.Map;

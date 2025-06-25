@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { I_Proc, ProcStub } from './proc.mjs';
-import { I_Test, I_TestFactory, I_Trial } from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
+import { I_AssertionContext, I_AssertionContextConsumer, I_Test, I_TestFactory, I_Trial } from "@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs";
 import { TrialSuite } from './tests4ts.mjs';
 import { ApiTrial, TrialParams } from './trials.mjs';
 import {TestFactoryDelegate} from "./tests.mjs";
@@ -75,6 +75,40 @@ export class SingleTestRunner {
     }
 
   }
+}
+
+export class RunTestParams {
+  _assertionCallback : I_AssertionContextConsumer;
+  _trialName?: string;
+  _testName?: string;
+  constructor(assertionCallback: I_AssertionContextConsumer, trialName?: string, testName?: string) {
+    this._assertionCallback = assertionCallback;
+    if (testName == null) {
+      testName = 'Some Test Name';
+    }
+    this._testName = testName;
+    if (trialName == null) {
+      trialName = 'Some Trial Name';
+    }
+    this._trialName = trialName;
+  }
+}
+
+class RunOneTestTrialDelegate extends  ApiTrial {
+  _acConsumer: I_AssertionContextConsumer;
+
+  constructor(params: RunTestParams) {
+    super(params._trialName);
+    this._acConsumer = params._assertionCallback;
+  }
+
+  testDelegate(ac: I_AssertionContext) {
+    this._acConsumer(ac);
+  }
+}
+export function run(params: RunTestParams): void {
+  let trialDelegate = new RunOneTestTrialDelegate(params);
+  new TrialSuite(params._trialName, [trialDelegate]).run().printTextReport();
 }
 
 export function runTest(trial: I_Trial, testName: string): void {

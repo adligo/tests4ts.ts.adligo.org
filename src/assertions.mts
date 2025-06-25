@@ -251,9 +251,9 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
       return true;
       /*
       yanking all Set tests until it is supported on the node CLI
-    } else if (Sets.isSet(expected)) {
+    } else if (Sets.isASet(expected)) {
       this._count++;
-      if (!Sets.isSet(actual)) {
+      if (!Sets.isASet(actual)) {
         this.stringMatchError('isSet == true', this.toString(actual), message);
       }
       let eSet = expected as Set<any>;
@@ -422,14 +422,6 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
         //there not equals, so pass back to the notEquals method
         return false;
       }
-    } else if (Sets.isSet(expected)) {
-      this._count++;
-      if (Sets.isSet(actual)) {
-
-      } else {
-        //there not equals, so pass back to the notEquals method
-        return false;
-      }
     } else if (Maps.isMap(expected)) {
       this._count++;
       if (!Maps.isMap(actual)) {
@@ -484,6 +476,17 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
         this.stringMatchError('Map size ' + eMap.size, 'Map size ' + aMap.size, message);
       }
       return true;
+    }  else if (Sets.isASet(expected)) {
+      /*
+      this._count++;
+      if (Sets.isASet(actual)) {
+
+      } else {
+        //there not equals, so pass back to the notEquals method
+        return false;
+      }
+      */
+      throw new AssertionError("Sets are not currently supported wait for ECMA 2026 to be incorporated in to node!");
     }
     return false;
   }
