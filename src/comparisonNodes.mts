@@ -30,70 +30,6 @@ import { Maps, Sets } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
 import {type} from "node:os";
 
 
-export class ComparisionNodeMutant implements I_ComparisionNode {
-    private _actual: any;
-    private _assertionCount: number = 0;
-    private _expected: any;
-    /**
-     * note these get added backwards leaf first when we are adding them
-     * so the getChildInfo method is somewhat screwy as it returns the last element
-     * for 0 and the first element for getCount -1
-     * @private
-     */
-    private _childInfo: I_ComparisionBaseInfo[] = [];
-    private _type: ComparisonNodeInfoType;
-
-    constructor(actual: any, expected: any) {
-        this._actual = actual;
-        this._expected = expected;
-    }
-
-    addChildInfo(info: I_ComparisionBaseInfo): ComparisionNodeMutant {
-        this._childInfo.push(info);
-        return this;
-    }
-
-    getActual() {
-        return this._actual;
-    }
-    getAssertionCount(): number {
-        return this._assertionCount;
-    }
-    getExpected() {
-        return this._expected;
-    }
-    getInfoType(): ComparisonNodeInfoType {
-        return this._type
-    }
-    getChildInfo(idx: number): I_ComparisionBaseInfo {
-        if (idx == 0) {
-            return this._childInfo[this._childInfo.length - 1];
-        }
-        let idxRev = this._childInfo.length - 1 - idx;
-        return this._childInfo[idxRev];
-    }
-    getChildInfoSize(): number {
-        return this._childInfo.length;
-    }
-
-    hasChildInfo(): boolean {
-        if (this._childInfo.length == 0) {
-            return false;
-        }
-        return true;
-    }
-    increment(): ComparisionNodeMutant {
-        this._assertionCount++;
-        return this;
-    }
-
-    setType(type: ComparisonNodeInfoType): ComparisionNodeMutant {
-        this._type = type;
-        return this;
-    }
-}
-
-
 export class ComparisionArrayInfo implements I_ComparisionArrayInfo {
     _idx: number;
     constructor(index: number) {
@@ -202,6 +138,81 @@ export class ComparisionTypeInfo implements I_ComparisionTypeInfo {
     }
 }
 
+export class RootComparisionNodeMutant implements I_ComparisionNode {
+    private _actual: any;
+    private _assertionCount: number = 0;
+    private _expected: any;
+    /**
+     * Note: These reperesent the reasaon for a failure, this could have been done
+     * with a chain of Errors (Errors with causese of causes).  However, this succinct
+     * informative storage structure which includes the reason for the failure with a tree/branch
+     * like structure will prove much more informative to the user of the tests4ts APIs!
+     *
+     * Additional Note: these get added backwards leaf first when we are adding them
+     * so the getChildInfo method is somewhat screwy as it returns the last element
+     * for 0 and the first element for getCount -1
+     * @private
+     */
+    private _childInfo: I_ComparisionBaseInfo[] = [];
+
+    constructor(actual: any, expected: any) {
+        this._actual = actual;
+        this._expected = expected;
+    }
+
+    addChildInfo(info: I_ComparisionBaseInfo): RootComparisionNodeMutant {
+        this._childInfo.push(info);
+        return this;
+    }
+
+    getActual() {
+        return this._actual;
+    }
+    getAssertionCount(): number {
+        return this._assertionCount;
+    }
+    getExpected() {
+        return this._expected;
+    }
+    getChildInfo(idx: number): I_ComparisionBaseInfo {
+        if (idx == 0) {
+            return this._childInfo[this._childInfo.length - 1];
+        }
+        let idxRev = this._childInfo.length - 1 - idx;
+        return this._childInfo[idxRev];
+    }
+    getChildInfoSize(): number {
+        return this._childInfo.length;
+    }
+
+    hasChildInfo(): boolean {
+        if (this._childInfo.length == 0) {
+            return false;
+        }
+        return true;
+    }
+    increment(): RootComparisionNodeMutant {
+        this._assertionCount++;
+        return this;
+    }
+}
+
+export class ComparisionNodeMutant extends RootComparisionNodeMutant implements I_ComparisionBaseInfo {
+    _infoType: ComparisonNodeInfoType;
+
+    constructor(expected: any, actual: any, type?: ComparisonNodeInfoType) {
+        super(expected, actual);
+        if (type != null) {
+            this._infoType = type;
+        } else {
+            this._infoType = ComparisonNodeInfoType.Equal;
+        }
+    }
+
+    getInfoType(): ComparisonNodeInfoType {
+        return this._infoType;
+    }
+}
 
 export function getTypeName(o: any): TypeName {
     let t = typeof o;
