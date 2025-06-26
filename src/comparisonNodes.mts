@@ -77,7 +77,7 @@ export class ComparisionMapInfo implements I_ComparisionMapValueInfo {
     }
 
     getActualValue() {
-        return this._key
+        return this._actualValue;
     }
     getExpectedValue() {
         return this._expectedValue;

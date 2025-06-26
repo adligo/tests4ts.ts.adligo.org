@@ -227,6 +227,7 @@ export class EqualsRecursiveChecker {
     for (const [key, value] of eMap) {
       if (aMap.has(key)) {
         let actualValue = aMap.get(key);
+        counter.increment();
         if (this.equalsIn(value, actualValue, counter)) {
           // they matched
         } else {
