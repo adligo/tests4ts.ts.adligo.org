@@ -201,7 +201,7 @@ export class ComparisionNodeMutant extends RootComparisionNodeMutant implements 
     _infoType: ComparisonNodeInfoType;
 
     constructor(expected: any, actual: any, type?: ComparisonNodeInfoType) {
-        super(expected, actual);
+        super(actual, expected);
         if (type != null) {
             this._infoType = type;
         } else {

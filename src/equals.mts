@@ -55,7 +55,7 @@ export class EqualsRecursiveChecker {
   }
 
   public equals(expected: any, actual: any): RecursiveEqualsResult {
-    let counter = new RootComparisionNodeMutant(expected, actual);
+    let counter = new RootComparisionNodeMutant(actual,expected);
     let result = this.equalsIn(expected, actual,  counter);
     return new RecursiveEqualsResult(counter, result);
   }
@@ -126,7 +126,7 @@ export class EqualsRecursiveChecker {
         return false;
       }
     } else {
-      counter.addChildInfo(new ComparisionNodeMutant(actual, expected));
+      counter.addChildInfo(new ComparisionNodeMutant(expected,actual));
       return false;
     }
   }

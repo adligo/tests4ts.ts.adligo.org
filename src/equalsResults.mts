@@ -42,21 +42,3 @@ export class RecursiveEqualsResult {
      */
     public isSuccess(): boolean { return this._success }
 }
-
-export class RecursiveNotEqualsResult {
-    private _assertionCount: number;
-    private _success: boolean;
-
-    constructor(assertionCount: number, success: boolean) {
-        this._assertionCount = assertionCount;
-        this._success = success;
-    }
-
-    public getAssertionCount(): number { return this._assertionCount; }
-
-    /**
-     * if this is true then they were notEquals
-     * if this is false they were equals
-     */
-    public isSuccess(): boolean { return this._success }
-}

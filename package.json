@@ -2,8 +2,12 @@
   "bin": {
     "assertions.mjs": "./dist/assertions.mjs",
     "assertions.mts": "./src/assertions.mts",
+    "comparisonNodes.mjs": "./dist/comparisonNodes.mjs",
+    "comparisonNodes.mts": "./src/comparisonNodes.mts",
     "coverage.mjs": "./dist/coverage.mjs",
     "coverage.mts": "./src/coverage.mts",
+    "equalsResults.mjs": "./dist/equalsResults.mjs",
+    "equalsResults.mts": "./src/equalsResults.mts",
     "proc.mjs": "./dist/proc.mjs",
     "proc.mts": "./src/proc.mts",
     "results.mjs": "./dist/results.mjs",

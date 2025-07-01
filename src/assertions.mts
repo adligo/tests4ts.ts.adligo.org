@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 import {
-  ComparisionNodeType, ComparisonNodeInfoType, TypeName
+  ComparisionNodeType, ComparisonNodeInfoType, TypeName, toTypeNameLabel
 } from
       '@ts.adligo.org/i_tests4ts_types/dist/i_tests4ts_types.mjs';
 import {
   I_AssertionContext, I_AssertionContextConsumer, I_AssertionContextResult,
-  I_ComparisionNode, I_ComparisionArrayInfo, I_ComparisionBaseInfo,
+  I_ComparisionNode, I_ComparisionArrayInfo, I_ComparisionBaseInfo, I_ComparisionEqualInfo,
   I_ComparisionCollectionSizeInfo, I_ComparisionMapValueInfo, I_ComparisionSetInfo, I_ComparisionTypeInfo,
   I_EquatableString, I_Runnable
 } from
@@ -31,6 +31,8 @@ import {
 import { I_Equatable } from '@ts.adligo.org/i_obj/dist/i_obj.mjs';
 import { I_String } from '@ts.adligo.org/i_strings/dist/i_strings.mjs';
 import { Errors, isNil, Objs, Maps, Sets, Strings } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
+import {RecursiveEqualsResult} from "./equalsResults.mjs";
+import {RootComparisionNodeMutant} from "./comparisonNodes.mjs";
 
 export class AssertionError extends Error {
   public static isAssertionError(error: Error) {
@@ -54,6 +56,12 @@ export class AssertionError extends Error {
 export class AssertionContext implements I_AssertionContextResult, I_AssertionContext {
   private static readonly CLAZZ_NAME = 'org.adligo.ts.tests4ts.AssertionContext';
   private _count: number = 0;
+  /**
+   * Two spaces is the default, which I think looks nicer than an actual tab character
+   * in the error print outs
+   * @private
+   */
+  private _tab: string = '  ';
 
   public error(expected: string, runnable: () => void) {
     this._count++;
@@ -80,6 +88,73 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
   }
 
+  /**
+   * This will be the new way the equals method, will throw
+   * an AssertionError
+   * it will replace the stringMatchError method, and is currently public
+   * so that I can test it before I swap it into usage inside the equals method call statck
+   *
+   */
+  equalsThrowDeepNotEquals(result: RecursiveEqualsResult,  message?: string) {
+
+  }
+
+  /**
+   * This method simply formats the message of the AssertionError
+   * thrown by equalsThrowDeepNotEquals
+   * @param result
+   * @param message
+   */
+  equalsFormatDeepNotEquals(result: RecursiveEqualsResult,  message?: string): string {
+    let cn: I_ComparisionNode = result.getComparisionNode() as I_ComparisionNode;
+
+    var r = isNil(message) ? '' : message + '\n';
+
+    r += "Equals expected;\n" +
+        this._tab +"'" + this.toString(cn.getExpected()) + "'\n" +
+        "Actual;\n" +
+        this._tab + "'" + this.toString(cn.getActual()) + "'\n";
+    var tab = this._tab;
+    for (var i: number = 0; i < cn.getChildInfoSize(); i++) {
+      r += this.equalsFormatDeepNotEqualsHelper(cn.getChildInfo(i), i, tab);
+      tab += this._tab;
+    }
+    return r;
+  }
+
+  equalsFormatDeepNotEqualsHelper(result: I_ComparisionBaseInfo,  counter: number, tabIndent: string): string {
+    let type: ComparisonNodeInfoType = result.getInfoType();
+    switch (type) {
+      case ComparisonNodeInfoType.Array:
+        let ra: I_ComparisionArrayInfo = result as I_ComparisionArrayInfo;
+        return tabIndent + "#" + counter + " Array @ idx " + ra.getIndex() + "\n";
+      case ComparisonNodeInfoType.CollectionSize:
+        let cs: I_ComparisionCollectionSizeInfo = result as I_ComparisionCollectionSizeInfo;
+        return tabIndent + "#" + counter + " CollectionSize expected " + cs.getExpectedSize() + " actual " + cs.getActualSize() + "\n";
+      case ComparisonNodeInfoType.Equal:
+        let eq: I_ComparisionEqualInfo = result as I_ComparisionEqualInfo;
+        return tabIndent + "#" + counter + " Equals expected;\n" +
+            tabIndent + this._tab + "'" + this.toString(eq.getExpected()) + "'\n" +
+            tabIndent + "Actual;\n" +
+            tabIndent + this._tab + "'" + this.toString(eq.getActual()) + "'\n";
+      case ComparisonNodeInfoType.MapValue:
+        let mv: I_ComparisionMapValueInfo = result as I_ComparisionMapValueInfo;
+        return tabIndent + "#" + counter + " MapValue key;\n" +
+            tabIndent + this._tab + "'" + this.toString(mv.getKey()) + "'\n" +
+            tabIndent + "Expected;\n" +
+            tabIndent + this._tab + "'" + this.toString(mv.getExpectedValue()) + "'\n" +
+            tabIndent + "Actual;\n" +
+            tabIndent + this._tab + "'" + this.toString(mv.getActualValue()) + "'\n";
+      case ComparisonNodeInfoType.Set:
+        return tabIndent + "#" + counter + " Set is NOT yet suppored. \n";
+      case ComparisonNodeInfoType.Type:
+        let ti: I_ComparisionTypeInfo = result as I_ComparisionTypeInfo;
+        return tabIndent + "#" + counter + " TypeEquals expected;\n" +
+            tabIndent + this._tab + toTypeNameLabel(ti.getExpectedType()) + "\n" +
+            tabIndent + "Actual;\n" +
+            tabIndent + this._tab + toTypeNameLabel(ti.getActualType()) + "\n";
+    }
+  }
 
   getCount(): number {
     return this._count;
@@ -521,13 +596,17 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     if (typeof obj === 'string') {
       return obj;
     }
-
+    if (Maps.isMap(obj)) {
+      return JSON.stringify(Object.fromEntries(obj));
+    }
     if (typeof obj === 'object') {
       return JSON.stringify(obj);
     }
     //implicit toString conversion, but will likely turn into '[Object]'
     return '' + obj;
   }
+
+
 }
 
 
