@@ -17,22 +17,19 @@
  * limitations under the License.
  */
 import {
-  ComparisionNodeType, ComparisonNodeInfoType, TypeName, toTypeNameLabel
-} from
-      '@ts.adligo.org/i_tests4ts_types/dist/i_tests4ts_types.mjs';
-import {
-  I_AssertionContext, I_AssertionContextConsumer, I_AssertionContextResult,
-  I_ComparisionNode, I_ComparisionArrayInfo, I_ComparisionBaseInfo, I_ComparisionEqualInfo,
-  I_ComparisionCollectionSizeInfo, I_ComparisionMapValueInfo, I_ComparisionSetInfo, I_ComparisionTypeInfo,
-  I_EquatableString, I_Runnable
-} from
-  '@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs';
+  I_AssertionContext,
+  I_AssertionContextResult,
+  I_EquatableString, I_RecursiveEqualsResult,
+  I_RecursiveEqualsResultErrorFormmater,
+  I_Runnable
+} from '@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs';
+import {RecursiveEqualsResultErrorFormmater} from './formatters.mjs';
+import {EqualsRecursiveChecker, FastOrDeep} from './equals.mjs';
 
-import { I_Equatable } from '@ts.adligo.org/i_obj/dist/i_obj.mjs';
-import { I_String } from '@ts.adligo.org/i_strings/dist/i_strings.mjs';
-import { Errors, isNil, Objs, Maps, Sets, Strings } from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
+import {I_Equatable} from '@ts.adligo.org/i_obj/dist/i_obj.mjs';
+import {I_String} from '@ts.adligo.org/i_strings/dist/i_strings.mjs';
+import {Errors, isNil, Maps, Objs, Sets} from "@ts.adligo.org/type-guards/dist/typeGuards.mjs";
 import {RecursiveEqualsResult} from "./equalsResults.mjs";
-import {RootComparisionNodeMutant} from "./comparisonNodes.mjs";
 
 export class AssertionError extends Error {
   public static isAssertionError(error: Error) {
@@ -50,18 +47,35 @@ export class AssertionError extends Error {
   isAssertionError() { return true; }
 }
 
+export class AssertionContextParams {
+  private _formatter: I_RecursiveEqualsResultErrorFormmater;
+
+  getFormatter(): I_RecursiveEqualsResultErrorFormmater {
+    return this._formatter;
+  }
+
+  withFormatter(formatter: I_RecursiveEqualsResultErrorFormmater) {
+    this._formatter = formatter;
+  }
+}
 /**
- * To see how-to / usage go to https://github.com/adligo/tests4j.ts.adligo.org
+ * To see how-to / usage go to https://github.com/adligo/tests4ts.ts.adligo.org
  */
 export class AssertionContext implements I_AssertionContextResult, I_AssertionContext {
   private static readonly CLAZZ_NAME = 'org.adligo.ts.tests4ts.AssertionContext';
   private _count: number = 0;
-  /**
-   * Two spaces is the default, which I think looks nicer than an actual tab character
-   * in the error print outs
-   * @private
-   */
-  private _tab: string = '  ';
+  private _equalsDeep: EqualsRecursiveChecker = new EqualsRecursiveChecker(FastOrDeep.Deep);
+  private _equalsFast: EqualsRecursiveChecker = new EqualsRecursiveChecker(FastOrDeep.Fast);
+  private _formatter: I_RecursiveEqualsResultErrorFormmater;
+
+  constructor(params?: AssertionContextParams) {
+    if (!isNil(params)) {
+      this._formatter = params.getFormatter();
+    }
+    if (isNil(this._formatter)) {
+      this._formatter = new RecursiveEqualsResultErrorFormmater();
+    }
+  }
 
   public error(expected: string, runnable: () => void) {
     this._count++;
@@ -82,79 +96,13 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
   }
 
   equals(expected: I_EquatableString | I_Equatable | I_String | string | any, actual: I_String | string | any, message?: string): void {
-    if (!this.equalsDeepCheckIn(expected, actual, message)) {
-      var test = this.notEqualsCheckIn(expected, actual);
-      this.eqNeqIn(test, expected, actual, message);
+    let result: I_RecursiveEqualsResult = this._equalsDeep.equals(expected, actual);
+    this._count += result.getAssertionCount();
+    if ( !result.isSuccess()) {
+      throw new AssertionError(this._formatter.format(result, message));
     }
   }
 
-  /**
-   * This will be the new way the equals method, will throw
-   * an AssertionError
-   * it will replace the stringMatchError method, and is currently public
-   * so that I can test it before I swap it into usage inside the equals method call statck
-   *
-   */
-  equalsThrowDeepNotEquals(result: RecursiveEqualsResult,  message?: string) {
-
-  }
-
-  /**
-   * This method simply formats the message of the AssertionError
-   * thrown by equalsThrowDeepNotEquals
-   * @param result
-   * @param message
-   */
-  equalsFormatDeepNotEquals(result: RecursiveEqualsResult,  message?: string): string {
-    let cn: I_ComparisionNode = result.getComparisionNode() as I_ComparisionNode;
-
-    var r = isNil(message) ? '' : message + '\n';
-
-    r += "Equals expected;\n" +
-        this._tab +"'" + this.toString(cn.getExpected()) + "'\n" +
-        "Actual;\n" +
-        this._tab + "'" + this.toString(cn.getActual()) + "'\n";
-    var tab = this._tab;
-    for (var i: number = 0; i < cn.getChildInfoSize(); i++) {
-      r += this.equalsFormatDeepNotEqualsHelper(cn.getChildInfo(i), i, tab);
-      tab += this._tab;
-    }
-    return r;
-  }
-
-  equalsFormatDeepNotEqualsHelper(result: I_ComparisionBaseInfo,  counter: number, tabIndent: string): string {
-    let type: ComparisonNodeInfoType = result.getInfoType();
-    switch (type) {
-      case ComparisonNodeInfoType.Array:
-        let ra: I_ComparisionArrayInfo = result as I_ComparisionArrayInfo;
-        return tabIndent + "#" + counter + " Array @ idx " + ra.getIndex() + "\n";
-      case ComparisonNodeInfoType.CollectionSize:
-        let cs: I_ComparisionCollectionSizeInfo = result as I_ComparisionCollectionSizeInfo;
-        return tabIndent + "#" + counter + " CollectionSize expected " + cs.getExpectedSize() + " actual " + cs.getActualSize() + "\n";
-      case ComparisonNodeInfoType.Equal:
-        let eq: I_ComparisionEqualInfo = result as I_ComparisionEqualInfo;
-        return tabIndent + "#" + counter + " Equals expected;\n" +
-            tabIndent + this._tab + "'" + this.toString(eq.getExpected()) + "'\n" +
-            tabIndent + "Actual;\n" +
-            tabIndent + this._tab + "'" + this.toString(eq.getActual()) + "'\n";
-      case ComparisonNodeInfoType.MapValue:
-        let mv: I_ComparisionMapValueInfo = result as I_ComparisionMapValueInfo;
-        return tabIndent + "#" + counter + " MapValue key;\n" +
-            tabIndent + this._tab + "'" + this.toString(mv.getKey()) + "'\n" +
-            tabIndent + "Expected;\n" +
-            tabIndent + this._tab + "'" + this.toString(mv.getExpectedValue()) + "'\n" +
-            tabIndent + "Actual;\n" +
-            tabIndent + this._tab + "'" + this.toString(mv.getActualValue()) + "'\n";
-      case ComparisonNodeInfoType.Set:
-        return tabIndent + "#" + counter + " Set is NOT yet suppored. \n";
-      case ComparisonNodeInfoType.Type:
-        let ti: I_ComparisionTypeInfo = result as I_ComparisionTypeInfo;
-        return tabIndent + "#" + counter + " TypeEquals expected;\n" +
-            tabIndent + this._tab + toTypeNameLabel(ti.getExpectedType()) + "\n" +
-            tabIndent + "Actual;\n" +
-            tabIndent + this._tab + toTypeNameLabel(ti.getActualType()) + "\n";
-    }
-  }
 
   getCount(): number {
     return this._count;
@@ -179,21 +127,26 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
   }
 
   notEquals(expected: I_EquatableString | I_Equatable | I_String | string | any, actual: I_String | string | any, message?: string): void {
-    var test = !this.notEqualsCheckIn(expected, actual);
-    this.eqNeqIn(test, expected, actual, message);
+    let result: I_RecursiveEqualsResult = this._equalsFast.equals(expected, actual);
+    this._count += result.getAssertionCount();
+    if (result.isSuccess()) {
+      throw new AssertionError(this._formatter.format(result, message));
+    }
   }
 
   same(expected: I_String | string | any, actual: I_String | string | any, message?: string): void {
     this._count++;
     if (!(expected === actual)) {
-      this.stringMatchError(this.toString(expected), this.toString(actual), message);
+      throw new AssertionError(this._formatter.format(
+          RecursiveEqualsResult.of(expected, actual), message));
     }
   }
 
   notSame(expected: I_String | string | any, actual: I_String | string | any, message?: string): void {
     this._count++;
     if (expected === actual) {
-      this.stringMatchError(expected, actual, message);
+      throw new AssertionError(this._formatter.format(
+          RecursiveEqualsResult.of(expected, actual), message));
     }
   }
 
@@ -234,7 +187,8 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
     this._count++;
     if (expected.name != actual.name) {
-      this.eqNeqIn(true, expected.name, actual.name, message);
+      throw new AssertionError(this._formatter.format(
+          RecursiveEqualsResult.of(expected.name, actual.name), message));
     }
 
     this._count++;
@@ -247,7 +201,8 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
     this._count++;
     if (expected.message != actual.message) {
-      this.eqNeqIn(true, expected.message, actual.message, message);
+      throw new AssertionError(this._formatter.format(
+          RecursiveEqualsResult.of(expected.message, actual.message), message));
     }
 
     if (Errors.hasCause(expected)) {
@@ -266,347 +221,6 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
   _increment() {
     this._count++;
   }
-
-
-  /**
-   *
-   * @param testFailed true when the test failed
-   * @param expected
-   * @param actual
-   * @param message
-   * @private
-   */
-  private eqNeqIn(testFailed: boolean, expected: I_String | string | any, actual: I_String | string | any, message?: string) {
-    this._count++;
-    //out('in eqNeqIn with test = ' +test)
-    if (testFailed) {
-      let expectedAsString: string = this.toString(expected);
-      let actualAsString: string = this.toString(actual)
-      this.stringMatchError(expectedAsString, actualAsString, message);
-    }
-  }
-
-  /**
-   * Perform a deep check of a collection
-   * @param expected
-   * @param actual
-   * @param message
-   * @return Returns true if this was an Array, Map or Set and subsequent checks occurred, false otherwise.
-   * @private
-   */
-  private equalsDeepCheckIn(expected: any, actual: any, message?: string): boolean {
-    //setup messageFormatting
-    var sMsg = ''
-    if (message == undefined || message == null) {
-      //do nothing
-    } else {
-      sMsg = message;
-    }
-
-    if (Array.isArray(expected)) {
-      this._count++;
-      if (!Array.isArray(actual)) {
-        this.stringMatchError('isArray == true', this.toString(actual), message);
-      }
-      let eArray = expected as Array<any>;
-      let aArray = actual as Array<any>;
-      this._count++;
-      var len = eArray.length;
-      if (aArray.length < len) {
-        len = aArray.length;
-      }
-      //compare everything we can to attempt to be as informative as possible
-      //recurse to the equals method
-      for (let i = 0; i < len; i++) {
-        this.equals(eArray[i], aArray[i], sMsg + '\n\t\tThe array element at the following index should match idx: ' + i);
-      }
-      if (eArray.length != aArray.length) {
-        this.stringMatchError('Array size ' + eArray.length, 'Array size ' + aArray.length, message);
-      }
-      return true;
-      /*
-      yanking all Set tests until it is supported on the node CLI
-    } else if (Sets.isASet(expected)) {
-      this._count++;
-      if (!Sets.isASet(actual)) {
-        this.stringMatchError('isSet == true', this.toString(actual), message);
-      }
-      let eSet = expected as Set<any>;
-      let aSet = actual as Set<any>;
-
-      let eNotInA = Sets.difference(eSet, aSet);
-      let aNotInE = Sets.difference(aSet, eSet);
-
-      this._count++;
-      if (eNotInA.size == 0 && aNotInE.size == 0) {
-        return true;
-      } else if (eNotInA.size == 0) {
-        throw new Error(sMsg + "\n\tThe following elements are missing from the expected Set;\n\t\t" + [...aNotInE] + "\n");
-      } else {
-        throw new Error(sMsg + "\n\tThe following elements are missing from the actual Set;\n\t\t" + [...eNotInA] + "\n");
-      }
-      */
-    } else if (Maps.isMap(expected)) {
-      this._count++;
-      if (!Maps.isMap(actual)) {
-        this.stringMatchError('isMap == true', this.toString(actual), message);
-      }
-      let eMap = expected as Map<any, any>;
-      let aMap = actual as Map<any, any>;
-      this._count++;
-      var len = eMap.size;
-      var over = eMap;
-      if (aMap.size < len) {
-        len = aMap.size;
-        over = aMap;
-      }
-      //compare everything we can to attempt to be as informative as possible
-      //recurse to the equals method
-      for (const key of over.keys()) {
-        this._count++;
-        if (eMap.has(key)) {
-          if (aMap.has(key)) {
-            //they both have the key
-          } else {
-            throw new AssertionError(sMsg + "\n\t The expected Map has the following key, which is missing from the actual Map; \n\t\t'" + key + "'");
-          }
-        } else {
-          throw new AssertionError(sMsg + "\n\t The expected Map is missing the following key, which is present in the actual Map; \n\t\t'" + key + "'");
-        }
-        this.equals(eMap.get(key), aMap.get(key), sMsg + "\n\tThe value with the following key should match;\n\t\t '" + key + "'\n");
-      }
-      //
-      let allKeys: Set<any> = new Set(eMap.keys());
-      allKeys = allKeys.union(new Set(aMap.keys()));
-      allKeys = allKeys.difference(new Set(over.keys()));
-      this._count++;
-      //this is a bug in JavaScripts Map implementation
-      //console.log('before check allKeys.size is ' + allKeys.size);
-      if (allKeys.size >= 1) {
-        let keys = new Set(allKeys.keys());
-        //console.log("the single key is '" + keys[0] + "'");
-        if (allKeys.size == 1 && keys[0] == undefined) {
-          console.log("This is a bug in EsNext why would a Map have a undefined key, someone please fix! ");
-        } else {
-          if (eMap === over) {
-            throw new AssertionError(sMsg + "\n\tThe following keys are missing from the expected Map;\n\t\t" + [...keys] + "\n");
-          } else {
-            throw new AssertionError(sMsg + "\n\tThe following keys are missing from the actual Map;\n\t\t" + [...keys] + "\n");
-          }
-        }
-      }
-      this._count++;
-      if (eMap.size != aMap.size) {
-        this.stringMatchError('Map size ' + eMap.size, 'Map size ' + aMap.size, message);
-      }
-      return true;
-    }
-    return false;
-  }
-
-  private notEqualsCheckIn(expected: any, actual: any): boolean {
-    var checkNotEqual = false;
-    if (typeof expected === 'undefined' && expected == undefined) {
-      if (typeof actual === 'undefined' && actual == undefined) {
-        return checkNotEqual;
-      } else {
-        //the actual is not undefined so fail
-        return true;
-      }
-    }
-    if (typeof expected === 'object' && expected == null) {
-      if (typeof actual === 'object' && actual == null) {
-        return checkNotEqual;
-      } else {
-        //the actual is not null so fail
-        return true;
-      }
-    }
-    if (typeof expected === 'number' && isNaN(expected)) {
-      if (typeof actual === 'number' && isNaN(actual)) {
-        return checkNotEqual;
-      } else {
-        //the actual is not a NaN so fail
-        return true;
-      }
-    }
-
-    if (Objs.isEquatable(expected)) {
-      checkNotEqual = !expected.equals(actual);
-    } else {
-      if (expected === actual) {
-        //there the same so leave the test variable false (test pass)
-      } else {
-        //there not the same so check types
-        if (typeof expected === typeof actual) {
-          //there the same type so they might be equal
-          if (expected == actual) {
-            //there also loosly equal so leave the test variable false (test pass)
-          } else {
-            //there not loosly equal so fail
-            checkNotEqual = true;
-          }
-        } else {
-          //there not the same type so fail
-          checkNotEqual = true;
-        }
-      }
-    }
-    return checkNotEqual;
-  }
-
-  /**
-   * Perform a deep notEquals check of a collection, which is somewhat screwy
-   *   the goal is to put as quick as possible if there not equals because that's a passing
-   *   check for the notEquals assertion in the public API.  Generally, I don't think users of the
-   *   API will be interested in why there not equals.
-   * @param expected
-   * @param actual
-   * @param message
-   * @return Returns true if this was an Array, Map or Set and subsequent notEquals checks occurred, false otherwise.
-   * @private
-   */
-  private notEqualsDeepCheckIn(expected: any, actual: any, message?: string): boolean {
-    //setup messageFormatting
-    var sMsg = ''
-    if (message == undefined || message == null) {
-      //do nothing
-    } else {
-      sMsg = message;
-    }
-
-    if (Array.isArray(expected)) {
-      this._count++;
-      if (Array.isArray(actual)) {
-        let eArray = expected as Array<any>;
-        let aArray = actual as Array<any>;
-
-        if (eArray.length == aArray.length) {
-          var len = eArray.length;
-          for (let i = 0; i < len; i++) {
-            // recurse in case there are nested collections or objects
-            // TODO improve this code, to call equals and recurse into collections
-            this.notEquals(eArray[i], aArray[i], sMsg + '\n\t\tThe array element at the following index should NOT be equals at idx: ' + i);
-          }
-          return false;
-        } else {
-          //there not equals, so pass back to the notEquals method
-          return false;
-        }
-      } else {
-        //there not equals, so pass back to the notEquals method
-        return false;
-      }
-    } else if (Maps.isMap(expected)) {
-      this._count++;
-      if (!Maps.isMap(actual)) {
-        this.stringMatchError('isMap == true', this.toString(actual), message);
-      }
-      let eMap = expected as Map<any, any>;
-      let aMap = actual as Map<any, any>;
-      this._count++;
-      var len = eMap.size;
-      var over = eMap;
-      if (aMap.size < len) {
-        len = aMap.size;
-        over = aMap;
-      }
-      //compare everything we can to attempt to be as informative as possible
-      //recurse to the equals method
-      for (const key of over.keys()) {
-        this._count++;
-        if (eMap.has(key)) {
-          if (aMap.has(key)) {
-            //they both have the key
-          } else {
-            throw new AssertionError(sMsg + "\n\t The expected Map has the following key, which is missing from the actual Map; \n\t\t'" + key + "'");
-          }
-        } else {
-          throw new AssertionError(sMsg + "\n\t The expected Map is missing the following key, which is present in the actual Map; \n\t\t'" + key + "'");
-        }
-        this.equals(eMap.get(key), aMap.get(key), sMsg + "\n\tThe value with the following key should match;\n\t\t '" + key + "'\n");
-      }
-      //
-      let allKeys: Set<any> = new Set(eMap.keys());
-      allKeys = allKeys.union(new Set(aMap.keys()));
-      allKeys = allKeys.difference(new Set(over.keys()));
-      this._count++;
-      //this is a bug in JavaScripts Map implementation
-      //console.log('before check allKeys.size is ' + allKeys.size);
-      if (allKeys.size >= 1) {
-        let keys = new Set(allKeys.keys());
-        //console.log("the single key is '" + keys[0] + "'");
-        if (allKeys.size == 1 && keys[0] == undefined) {
-          console.log("This is a bug in EsNext why would a Map have a undefined key, someone please fix! ");
-        } else {
-          if (eMap === over) {
-            throw new AssertionError(sMsg + "\n\tThe following keys are missing from the expected Map;\n\t\t" + [...keys] + "\n");
-          } else {
-            throw new AssertionError(sMsg + "\n\tThe following keys are missing from the actual Map;\n\t\t" + [...keys] + "\n");
-          }
-        }
-      }
-      this._count++;
-      if (eMap.size != aMap.size) {
-        this.stringMatchError('Map size ' + eMap.size, 'Map size ' + aMap.size, message);
-      }
-      return true;
-    }  else if (Sets.isASet(expected)) {
-      /*
-      this._count++;
-      if (Sets.isASet(actual)) {
-
-      } else {
-        //there not equals, so pass back to the notEquals method
-        return false;
-      }
-      */
-      throw new AssertionError("Sets are not currently supported wait for ECMA 2026 to be incorporated in to node!");
-    }
-    return false;
-  }
-
-  private stringMatchError(expected: string, actual: string, message?: string) {
-    var s = '';
-    if (message != undefined) {
-      s = s + message + '\n';
-    }
-
-    throw new AssertionError(s + 'The expected is; \n\t\'' + expected + '\'\n\n\tHowever the actual is;\n\t\'' +
-      actual + '\'');
-  }
-
-  private isEquals(obj: I_EquatableString | I_Equatable | string | any, other: any): boolean {
-    if (obj == undefined) {
-      return false;
-    }
-    if (Objs.isEquatable(obj)) {
-      return obj.equals(other);
-    }
-    return obj == other;
-  }
-
-  private toString(obj: I_String | string | any): string {
-    if (obj == undefined) {
-      return obj;
-    }
-    if (Strings.isI_String(obj)) {
-      return (obj as I_String).toString();
-    }
-    if (typeof obj === 'string') {
-      return obj;
-    }
-    if (Maps.isMap(obj)) {
-      return JSON.stringify(Object.fromEntries(obj));
-    }
-    if (typeof obj === 'object') {
-      return JSON.stringify(obj);
-    }
-    //implicit toString conversion, but will likely turn into '[Object]'
-    return '' + obj;
-  }
-
-
 }
 
 

@@ -18,11 +18,24 @@
  */
 
 import {
-    I_ComparisionNode
+    I_ComparisionNode, I_RecursiveEqualsResult
 } from
         '@ts.adligo.org/i_tests4ts/dist/i_tests4ts.mjs';
 
-export class RecursiveEqualsResult {
+import {RootComparisionNodeMutant} from './comparisonNodes.mjs';
+
+export class RecursiveEqualsResult implements I_RecursiveEqualsResult {
+    /**
+     * returns a failure result
+     * @param expected
+     * @param actual
+     */
+    public static of(expected: any, actual: any): I_RecursiveEqualsResult {
+        return new RecursiveEqualsResult(new RootComparisionNodeMutant(actual, expected), false);
+    }
+    public static ofResult(expected: any, actual: any, success: boolean): I_RecursiveEqualsResult {
+        return new RecursiveEqualsResult(new RootComparisionNodeMutant(actual, expected), success);
+    }
     private _assertionCount: number;
     private _success: boolean;
     private _comparisionNode: I_ComparisionNode;

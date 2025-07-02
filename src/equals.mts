@@ -65,10 +65,9 @@ export class EqualsRecursiveChecker {
    * false otherwise
    */
   equalsIn(expected: any, actual: any,  counter: RootComparisionNodeMutant): boolean {
-    // undefined, null and NaN checks
-
     //optimization
     if (expected === actual) {
+      //same increment
       counter.increment();
       return true;
     }
@@ -98,7 +97,10 @@ export class EqualsRecursiveChecker {
   }
 
   private compareObjects(expected: any, counter: RootComparisionNodeMutant, actual: any) {
+    //type check increment
+    counter.increment();
     if (Objs.isEquatable(expected)) {
+      //equals increment
       counter.increment();
       if (expected.equals(actual)) {
         return true;
@@ -106,27 +108,30 @@ export class EqualsRecursiveChecker {
       counter.addChildInfo(new ComparisionNodeMutant(actual, expected));
       return false;
 
-    } else if (typeof actual === 'object') {
+    }
+
+    if (typeof actual === 'object') {
+      //delegate
       return this.compareJsonStringify(counter, actual, expected);
     }
-    counter.increment();
     counter.addChildInfo(new ComparisionNodeMutant(actual, expected));
     return false;
   }
 
   private comparePrimitive(counter: RootComparisionNodeMutant, expected: any, actual: any, tn: TypeName) {
-    //equals increment
+    //type match increment
     counter.increment();
-    if (expected == actual) {
-      //type is part of equals
-      if (typeof expected === typeof actual) {
+    if (typeof expected === typeof actual) {
+      //equals increment
+      counter.increment();
+      if (expected == actual) {
         return true;
       } else {
-        counter.addChildInfo(new ComparisionTypeInfo(tn, getTypeName(actual)));
+        counter.addChildInfo(new ComparisionNodeMutant(expected,actual));
         return false;
       }
     } else {
-      counter.addChildInfo(new ComparisionNodeMutant(expected,actual));
+      counter.addChildInfo(new ComparisionTypeInfo(tn, getTypeName(actual)));
       return false;
     }
   }
@@ -225,9 +230,9 @@ export class EqualsRecursiveChecker {
 
     //compare everything we can from both maps keys
     for (const [key, value] of eMap) {
+      counter.increment();
       if (aMap.has(key)) {
         let actualValue = aMap.get(key);
-        counter.increment();
         if (this.equalsIn(value, actualValue, counter)) {
           // they matched
         } else {
