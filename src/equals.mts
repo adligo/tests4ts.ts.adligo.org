@@ -105,16 +105,32 @@ export class EqualsRecursiveChecker {
       if (expected.equals(actual)) {
         return true;
       }
-      counter.addChildInfo(new ComparisionNodeMutant(actual, expected));
+      counter.addChildInfo(new ComparisionNodeMutant(expected, actual));
       return false;
+    }
 
+    //prioritize comparison of toString Strings
+    if (Strings.isI_String(expected)) {
+      if (Strings.isI_String(actual)) {
+        let eStr = expected.toString();
+        let aStr = actual.toString();
+        if (eStr === aStr) {
+          return true;
+        } else {
+          counter.addChildInfo(new ComparisionNodeMutant(expected, actual));
+          return false;
+        }
+      } else {
+        counter.addChildInfo(new ComparisionTypeInfo(TypeName.I_String, TypeName.Object));
+        return false;
+      }
     }
 
     if (typeof actual === 'object') {
       //delegate
       return this.compareJsonStringify(counter, actual, expected);
     }
-    counter.addChildInfo(new ComparisionNodeMutant(actual, expected));
+    counter.addChildInfo(new ComparisionNodeMutant(expected, actual));
     return false;
   }
 
@@ -279,11 +295,11 @@ export class EqualsRecursiveChecker {
       if (JSON.stringify(expected) == JSON.stringify(actual)) {
         return true;
       } else {
-        counter.addChildInfo(new ComparisionNodeMutant(actual, expected));
+        counter.addChildInfo(new ComparisionNodeMutant(expected, actual));
         return false;
       }
     } else {
-      counter.addChildInfo(new ComparisionNodeMutant(actual, expected));
+      counter.addChildInfo(new ComparisionNodeMutant(expected, actual));
       return false;
     }
   }
