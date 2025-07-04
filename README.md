@@ -1,5 +1,5 @@
-# tests4j.ts.adligo.org
-A small portion of the Tests4j code implemented in Typescript directly.
+# tests4ts.ts.adligo.org
+A TypeScript testing API with all configuration also in TypeScript.
 
 ## Install with npm as usual;
 ```
