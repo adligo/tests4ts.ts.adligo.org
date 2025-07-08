@@ -150,7 +150,7 @@ export class AssertionContext implements I_AssertionContextResult, I_AssertionCo
     }
   }
 
-  notNull(expected: string, message?: string): void {
+  notNull(expected: I_String | string | any, message?: string): void {
     this._count++;
     if (expected == undefined) {
       var s = '';
