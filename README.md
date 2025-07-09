@@ -15,7 +15,6 @@ npm install @ts.adligo.org/i_tests4ts --save-dev
 npm install @ts.adligo.org/junit-xml-tests4j --save-dev
 npm install @ts.adligo.org/tests4ts --save-dev
 npm install @ts.adligo.org/type-guards --save-dev
-npm install @ts.adligo.org/junit-xml-tests4j --save-dev
 ```
 
 ## Import Into Your Code
